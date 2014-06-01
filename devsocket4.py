@@ -33,8 +33,9 @@ acd = int(1)
 acl = int(1)
 acr = int(3)
 
-mapsize = '8'
-stepsize = '75'
+showimage = int(1)
+mapsize = int(8)
+stepsize = int(75)
 
 stat = "ogp"
 
@@ -51,13 +52,15 @@ class WSHandler(tornado.websocket.WebSocketHandler):
         self.x = 0
         self.y = 0
         self.z = 0
-
+        self.mapsize = mapsize
+        self.showimage = showimage
 
 
     def on_message(self, message):
 
         print 'Incoming message:', message      ## output message to python
-        
+        showimage = self.showimage
+        mapsize = self.mapsize
         x = self.x
         y = self.y
         z = self.z
@@ -92,6 +95,26 @@ class WSHandler(tornado.websocket.WebSocketHandler):
             hud1 = hud(img1, js, stat, x, y, z)
             hud1.run()
 
+        if message =='p':
+            stat = "mapsizing"
+            print "p"
+            mapsize = mapsize + 1
+            self.mapsize= mapsize
+            self.write_message("echo: " + message + " mapsize " + str(mapsize))
+            img1 = c.getImage()
+            hud1 = hud(img1, js, stat, x, y, z)
+            hud1.run()
+        if message =='l':
+            stat = "mapsizing"
+            print "l"
+            mapsize = mapsize - 1
+            self.mapsize = mapsize
+            self.write_message("echo: " + message + " mapsize " + str(mapsize))
+            img1 = c.getImage()
+            hud1 = hud(img1, js, stat, x, y, z)
+            hud1.run()
+            
+            
         if message =='y':
             print "y"
             y = y + 1
@@ -191,10 +214,10 @@ class WSHandler(tornado.websocket.WebSocketHandler):
             m = int(5)
             wsh = tornado.websocket.WebSocketHandler        ## wsh holds some socket info
             wsh2 = self                                    ## wsh2 holds the name of the instance  
-            map = so('4', c, m, js, wsh, wsh2)               ##  make an istance of the mapper --SO stands for seek out 
+            map = so(mapsize, c, m, js, wsh, wsh2)               ##  make an istance of the mapper --SO stands for seek out 
             self.map = map
             map.histo()                                   ##  histogram is necessary before run
-            print map.mySet                      ## print map log data array
+           ## print map.mySet                      ## print map log data array
 
         if message == 'c':
             wsh = tornado.websocket.WebSocketHandler        ## wsh holds some socket info
@@ -202,11 +225,29 @@ class WSHandler(tornado.websocket.WebSocketHandler):
             cchase = chase(c, js, wsh, wsh2)
             cchase.run()
 
-        if message == 'x':
+        if message == 'k':
             wsh = tornado.websocket.WebSocketHandler        ## wsh holds some socket info
             wsh2 = self                                    ## wsh2 holds the name of the instance  
             ac = autocal(c, js, wsh, wsh2)
             ac.run()
+        if message == 'x':
+            showimage = showimage - 1
+            self.showimage = showimage
+            pth1 = "images/image"
+            pth3 = ".png"
+            pth = pth1 + str(showimage) + pth3
+            print showimage
+            img1 = Image(pth)
+            img1.save(js.framebuffer)
+        if message == 'v':
+            showimage = showimage + 1
+            self.showimage = showimage
+            pth1 = "images/image"
+            pth3 = ".png"
+            pth = pth1 + str(showimage) + pth3
+            print showimage
+            img1 = Image(pth)
+            img1.save(js.framebuffer)
 
         if message =='t':
             print "t"

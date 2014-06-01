@@ -1,3 +1,4 @@
+
 <!DOCTYPE HTML>
 <html>
 <head>
@@ -5,7 +6,7 @@
 <style type="text/css">
 #up {	
 	height: 5em;
-	width: 100%;
+	width: 544px;
 	background-color: transparent;
 	font-size: 80%;
 	font-weight: bold;
@@ -13,7 +14,7 @@
 }
 #down {	
 	height: 5em;
-	width: 100%;
+	width: 544px;
 	background-color: transparent;
 	font-size: 80%;
 	font-weight: bold;
@@ -35,22 +36,37 @@
 	font-weight: bold;
 	color: #ffffff;
 }
-#togon {
-	width:80px;
- 	color:red;
- 	height:100px;	
-	background-color: #ffffff;
-}
-#togoff {	
+input.pic1 {	
+	height: 5em;
+	width: 145px;
 	background-color: transparent;
+	font-size: 80%;
+	font-weight: bold;
+	color: #ffffff;
+}
+input.stop1 {	
+	height: 5em;
+	width: 145px;
+	background-color: transparent;
+	font-size: 80%;
+	font-weight: bold;
+	color: #ffffff;
+}
+input.stop2 {	
+	height: 5em;
+	width: 145px;
+	background-color: red;
+	font-size: 80%;
+	font-weight: bold;
+	color: #ffffff;
 }
 div.centre
 { 
-	background-image:url('ogp1gui.jpg');
+	background-image:url('ogp2gui.jpg');
 	display: block;
 	margin-left: auto;
 	margin-right: auto;
-	max-height: 600px; 
+	max-height: 3000px; 
 	max-width: 850px;
 	min-width: 850px;
 	min-height: 600px;
@@ -65,19 +81,37 @@ width:80px;
 input.padbutton2
 { 
 width:100px;
- color:blue;
+ color:black;
  height:100px;
  background-color: red;
 }
-#pad{
-	color: white;
-	font-weight: bold;
+
+
+input.padbutton3
+{ 
+width:80px;
+ color:white;
+ height:30px;
+}
+input.padbutton6
+{ 
+width:80px;
+ color:white;
+ height:100px;
+ background-color: yellow;
 }
 
-#bottom{
-	max-height: 300px;
-	columns: 300px 2;
-	-webkit-columns: 300px 2;
+input.padbutton4
+{ 
+width:100px;
+ color:white;
+ height:30px;
+}
+
+div.bottom{
+	max-height: 250px;
+	columns: 200px 3 ;
+	-webkit-columns: 200px 3;
 }
 body {	
 	
@@ -142,12 +176,12 @@ body {
          $("#log").html($("#log").html() + "<br/>" + hr + ":" + min + ":" + sec + " " + mapping + ","+chy  );
 	 $("#log").scrollTop($("#log")[0].scrollHeight);
 	if (h == "m"){
-	 if (mapping == yes){
+	 if (mapping == "y"){
 	    ws.send("b");
-} else if(mapping == no){
-	}
-}
-	 if (h == d){
+	 } else if(mapping == "n"){
+	 }
+	 }
+	 if (h == "d"){
 	  var imageObj = new Image();
 	  imageObj.onload = function(){
 	    ctx.drawImage(imageObj, xpos, ypos);
@@ -178,7 +212,7 @@ body {
 
 		}
 
-	 if (chasing == yes){
+	 if (chasing == "y"){
 	    ws.send("c");
   	    ctx.fillStyle = "#ffffff";
 	    ctx.font="10px Arial";
@@ -208,7 +242,7 @@ body {
 	};
 	ws.onopen = function(evt) { 
 	   $("#log").text("OGP-- SOCKET OPEN"); 
-	   
+	   	  ws.send('n');
 	   
 	};
 
@@ -228,6 +262,7 @@ body {
 	 }    
 	 if (dgear == "o"){
 	  ws.send('7');
+
 	 }
 	 });
 
@@ -241,6 +276,7 @@ body {
 	 }    
 	 if (dgear == "o"){
 	  ws.send('9');
+
 	 }
 	});
 
@@ -254,6 +290,7 @@ body {
 	 }    
 	 if (dgear == "o"){
 	  ws.send('2');
+
 	 }
 	});
 
@@ -267,6 +304,7 @@ body {
 	 }    
 	 if (dgear == "o"){
 	  ws.send('4');
+	
 	 }
 	});
 
@@ -281,27 +319,33 @@ body {
 	$("#short").click(function(){
 	    
 	    dgear = "n";
+
+
 	});
 
-	$("#long").click(function(){
+	$("#long").click(function(){	
+
+
 	  
 	    dgear = "m";
 	});
 	$("#open").click(function(){
-	    
+
 	    dgear = "o";
 	});
 	$("#map").click(function(){
 	    ws.send('n');
+
 	});
 
 	$("#chase").click(function(){
 	 var yes = "y";
 	 var no = "n";
-	 $("#chase").toggleClass("padbutton2");
+
 	 if (chasing == no){
 	  
-	  chasing = yes; 
+	  chasing = yes;
+	  mapping = no;
 
           ws.send('c');
 	} else if (chasing == yes){
@@ -313,11 +357,9 @@ body {
 	$("#map2").click(function(){
 	 var yes = "y";
 	 var no = "n";
-	 $("#map2").toggleClass("padbutton2");
 	 if (mapping == no){
-	  
 	  mapping = yes; 
-
+	  chasing = no;
           ws.send('b');
 	} else if (mapping == yes){
 	  mapping = no;
@@ -330,21 +372,29 @@ body {
 
 	$("#autocal").click(function(){
 	    chasing = "n";
-	    ws.send('x');
+	    mapping = "n";
+	    ws.send('k');
 	});
 
 	$("#allstop").click(function(){
+
 	    chasing = "n";
 	    ws.send('3');
 	   var ch = 0;
 	});
 
 	$("#allstop2").click(function(){
+
 	    ws.send('8');
 	});
 
-	$("#uon").click(function(){
-	    ws.send('7');
+	$("#mapsizea").click(function(){
+	    ws.send('p');
+	
+	});
+
+	$("#mapsizeb").click(function(){
+	    ws.send('l');
 	
 	});
 
@@ -359,9 +409,16 @@ body {
 	});
 
 
-
 	$("#ron").click(function(){
 	    ws.send('4');
+
+	});
+	$("#pic1").click(function(){
+	    ws.send('v');
+
+	});
+	$("#pic2").click(function(){
+	    ws.send('x');
 
 	});
 
@@ -375,7 +432,9 @@ body {
 <body>
  <div class="centre" id="main">
   <div id="top">
-  <input type="image" id="up" value="UP" /><br>
+  <input type="image" class="pic1" id="pic2" value="PIC-" />
+  <input type="image" id="up" value="UP" /<br>
+  <input type="image" class="pic1" id="pic1" value="PIC+" />
   </div>
 
   <div id="middle">
@@ -385,39 +444,43 @@ body {
   </div>
 
   <div>
+  <input type="image" class="stop1" id="allstop" value="STOP X" />
   <input type="image" id="down" value="DOWN" />
+  <input type="image" class="stop1" id="allstop2" value="STOP Y" />
   </div>
 
-  <div id="bottom">
-   <div id="pad">
-   <input class= "padbutton" type="image" id="in"  value="IN" />
-   <input class= "padbutton" type="image" id="out" value="OUT" />
+  <div id="bottom" class="bottom">
+   <div id="padleft">
+
    <input class= "padbutton" type="image" id="short" value="NUDGE" />
    <input class= "padbutton" type="image" id="long" value="MAP STEP" />
-   
-   <input class= "padbutton" type="image" id="map" value="MAP" />
-   <input class= "padbutton" type="image" id="in"  value="IN" />
-   <input class= "padbutton" type="image" id="map2" value="MAP2" />
-   <input class= "padbutton" type="image" id="chase" value="CHASE" />   
-   <input class= "padbutton" type="image" id="autocal" value="AUTOCAL" /><br><br>
-   <input class= "padbutton" type="image" id="open" value="OPEN GEAR" />
-   <input class= "padbutton" type="image" id="allstop" value="X STOP" />
-   <input class= "padbutton" type="image" id="allstop2" value="Y STOP" />
+   <input class= "padbutton6" type="image" id="open" value="OPEN GEAR" />
+   <input class= "padbutton" type="image" id="map" value="NEW MAP" />
+
+   <input class= "padbutton" type="image" id="map2" value="MAP ON/OFF" />
+   <input class= "padbutton" type="image" id="chase" value="CHASE" /><br><br>
+     <div id="log" style="overflow:scroll; width:100%; height:100px; color:white; background-color:#000000; margin: 1px; text-align:left">Messages go Here </div>
+ <br><input type="text" id="msg" style=" color:white; background-color:#000000; height: 100%; width:60% " />
+   <input type="image" id="thebutton" class= "padbutton3" value="SEND" /><br><br>
+  <input class= "padbutton4" type="image" id="manual" value="MANUAL" />  
+ <input class= "padbutton4" type="image" id="in"  value="PIC FOLDER" />
+    <input class= "padbutton" type="image" id="in"  value="IN" />
+   <input class= "padbutton" type="image" id="out" value="OUT" />
+  <input class= "padbutton" type="image" id="cam2" value="CAM 2" />
 
 
-   <br>
-   </div>
-   <div id="E" >
-    <div id="log" style="overflow:scroll; width:200px; height:100px; color:white; background-color:#000000; margin: 1px; text-align:left">Messages go Here</div>
-   <div id="sender" style="text-align:left">
-   <input type="text" id="msg" style="background:#ffffff; width:100px " />
-   <input type="button" id="thebutton" value="Send" />
-   </div>
-   </div>
+
+
+  <input class= "padbutton" type="image" id="autocal" value="AUTOCAL" />
+
+   <input class= "padbutton" type="image" id="mapsizea" value="MAPSIZE+" />
+   <input class= "padbutton" type="image" id="mapsizeb" value="MAPSIZE-" />
+
+</div>
     </div>
-<div><br><br>
+<div>
 <canvas id="myCanvas" width="544" height="544" style="border:1px solid#ffffff;"></canvas><canvas id="myCanvas" width="544" height="288" style="border:1px solid#000000;"></canvas>
 </div>
- </div>
+
 </body>
 </html>

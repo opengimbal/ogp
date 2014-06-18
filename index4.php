@@ -481,7 +481,7 @@ body {
 <div>
 <canvas id="myCanvas" width="544" height="544" style="border:1px solid#ffffff;"></canvas><canvas id="myCanvas" width="544" height="288" style="border:1px solid#000000;"></canvas>
 </div>
+(c) Copyright 2014   C. Robert Barnett III
 
 </body>
 </html>
-##(c) Copyright 2014   C. Robert Barnett III

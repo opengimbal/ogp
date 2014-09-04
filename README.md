@@ -1,7 +1,7 @@
 OpenGimbal Project
 aka Starbucket
 
-http://opengimbal.net/wp-content/uploads/2014/02/wpoverviewdiagram3.jpg
+http://www.opengimbal.net
 
 DIY WIRELESS TELESCOPY
 

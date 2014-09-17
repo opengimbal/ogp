@@ -196,20 +196,19 @@ body {
 	 } else if(mapping == "n"){                  // if you press the stop button then the mapping will cease
 	 }
 	 }
-	 if (h == "d"){  //
-	  var imageObj = new Image();
-	  imageObj.onload = function(){
-	    ctx.drawImage(imageObj, xpos, ypos);
-	    ctx.fillStyle = "#ffffff";
-	    ctx.font="10px Arial";
-	
-	    ctx.fillText(p, xpos, y3);
+	 if (h == "d"){  // "d" declares that we are dropping a new thumb on the canvas
+	  var imageObj = new Image(); // load the thumb into a variable
+	  imageObj.onload = function(){  //waits for the thumb to load
+	    ctx.drawImage(imageObj, xpos, ypos);  // once loaded it is drawn
+	    ctx.fillStyle = "#ffffff";   // and then we draw the reference number next to it
+	    ctx.font="10px Arial"; //
+	    ctx.fillText(p, xpos, y3);  //
 	   };
-	  imageObj.src = thumbpath;
+	  imageObj.src = thumbpath; // part of the image loading script, not sure what it does but its necessary
 	  
 	 }
-	 if (x == "u"){
-           chy = chy - 5;
+	 if (x == "u"){   // if we are in chase mode, then x is the direction we have just moved
+           chy = chy - 5;   // edits the chase position
 		}	   
 	 if (x == "d"){
            chy = chy + 5;
@@ -227,11 +226,10 @@ body {
 
 		}
 
-	 if (chasing == "y"){
-	    ws.send("c");
-  	    ctx.fillStyle = "#ffffff";
+	 if (chasing == "y"){  // if we are in chasing mode 
+	    ws.send("c");  //send the signal to continue chasing
+  	    ctx.fillStyle = "#ffffff";  //draw an x onto the canvas to represent the motion of the chasing
 	    ctx.font="10px Arial";
-	
 	    ctx.fillText("x", chx, chy) ;
 	}
 	}

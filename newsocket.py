@@ -364,9 +364,9 @@ class WSHandler(tornado.websocket.WebSocketHandler):  ## this is the switchboard
             irpic.run()
 
 
-        if message =='9':
+        if message =='9':    ## OPEN GEAR Y AXIS DIRECTION UNKNOWN
             print "9"
-            s.write('9')
+            s.write('9')    ## this starts the motor, BE READY TO STOP IT.
             self.write_message("echo: " + message + " 9")
 
 
@@ -374,13 +374,13 @@ class WSHandler(tornado.websocket.WebSocketHandler):  ## this is the switchboard
     def on_close(self):                       ##  if you lose the socket
         print 'Connection was closed...'
 
-application = tornado.web.Application([        ##creates instance of socket
-    (r'/ws', WSHandler),                 
+application = tornado.web.Application([        ## creates an instance of the websocket as described in your class above
+    (r'/ws', WSHandler),                    ## this is the real beginning of the object
 ])
 
 
 if __name__ == "__main__":                       ##    since this is the main module
-    http_server = tornado.httpserver.HTTPServer(application)      ## opens the socket
+    http_server = tornado.httpserver.HTTPServer(application)      ## this opens the socket you created above
     http_server.listen(8888)                                     ## on this port
-    tornado.ioloop.IOLoop.instance().start()        ##   this starts the threaded socket loop
+    tornado.ioloop.IOLoop.instance().start()        ##   this starts the threaded socket main loop as described above
         

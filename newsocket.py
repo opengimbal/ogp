@@ -14,11 +14,11 @@ import tornado.httpserver  ## you will have previously installed these libraries
 import tornado.websocket  
 import tornado.ioloop
 import tornado.web
-import time
+import time  ## comes with python so doesnt need installing
 import serial
 import picamera
 from SimpleCV import *
-import os
+import os   ## comes with python so doesnt need installing
 ## our libraries
 from ogp4 import *
 import ircam
@@ -46,17 +46,17 @@ mapsize = int(8)  ## buttons control this
 stepsize = int(100)  ## same here
 
 stat = "ogp"   ##status is info relayed through the system to the main display, it can be anything
-s.write('3')  ## send a serial command through to the motor control, 3 means stop x dimension
-s.write('8')  ##  8 is stop Y
+s.write('3')  ## send a serial command through to the motor control, 3 means stop x axis movement
+s.write('8')  ##  8 is stop Y axis movement
 
 
 
 
-class WSHandler(tornado.websocket.WebSocketHandler):      
+class WSHandler(tornado.websocket.WebSocketHandler):
 
-    def open(self):
-        print 'New connection was opened'
-        self.write_message("telescope listening")   ## sending message through text socket
+    def open(self):    ## socket open event
+        print 'New connection was opened'  ## this prints into the python command prompt 
+        self.write_message("telescope listening")   ## send message through serial text socket
         x = int(0)
         y = int(0)
         z = int(0)

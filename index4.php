@@ -1,4 +1,3 @@
-
 <!DOCTYPE HTML>
 <html>
 <head>
@@ -6,7 +5,7 @@
 <style type="text/css">
 #up {	
 	height: 5em;
-	width: 544px;
+	width: 181px;
 	background-color: transparent;
 	font-size: 80%;
 	font-weight: bold;
@@ -14,7 +13,7 @@
 }
 #down {	
 	height: 5em;
-	width: 544px;
+	width: 181px;
 	background-color: transparent;
 	font-size: 80%;
 	font-weight: bold;
@@ -33,6 +32,22 @@
 	height: 288px;
 	width: 145px;
 	background-color: transparent;
+	font-weight: bold;
+	color: #ffffff;
+}
+input.stepsize {	
+	height: 5em;
+	width: 100px;
+	background-color: transparent;
+	font-size: 80%;
+	font-weight: bold;
+	color: #ffffff;
+}
+input.up2 {	
+	height: 5em;
+	width: 177px;
+	background-color: transparent;
+	font-size: 80%;
 	font-weight: bold;
 	color: #ffffff;
 }
@@ -129,7 +144,7 @@ body {
       var mapping = "n";
       var mapx =  "0";
       var mapy = "0";
-      var dgear = "o";
+      var dgear = "s";
 
       $(function(){
        var ws;
@@ -387,12 +402,30 @@ body {
 
 	    ws.send('8');
 	});
+	$("#cam2").click(function(){
 
+	    ws.send('c2');
+	});
+	$("#cam1").click(function(){
+
+	    ws.send('c1');
+	});
+	$("#cam4").click(function(){
+
+	    ws.send('c4');
+	});
+	$("#cam3").click(function(){
+
+	    ws.send('c3');
+	});
 	$("#mapsizea").click(function(){
 	    ws.send('p');
 	
 	});
-
+	$("#cam2").click(function(){
+	    ws.send('c2');
+	
+	});
 	$("#mapsizeb").click(function(){
 	    ws.send('l');
 	
@@ -425,6 +458,14 @@ body {
 	$("#thebutton").click(function(){
 	    sender();
 	});
+	$("#splus").click(function(){
+
+	    ws.send('+');
+	});
+	$("#sminus").click(function(){
+
+	    ws.send('-');
+	});
      });
    </script>
 </head>
@@ -432,8 +473,10 @@ body {
 <body>
  <div class="centre" id="main">
   <div id="top">
-  <input type="image" class="pic1" id="pic2" value="PIC-" />
+ <input type="image" class="pic1" id="pic2" value="PIC-" />
+  <input type="image" class="up2" id="cam2" value="CAM2" />
   <input type="image" id="up" value="UP" /<br>
+  <input type="image" class="up2" id="cam3" value="CAM3" />
   <input type="image" class="pic1" id="pic1" value="PIC+" />
   </div>
 
@@ -445,7 +488,9 @@ body {
 
   <div>
   <input type="image" class="stop1" id="allstop" value="STOP X" />
+  <input type="image" class="up2" id="sminus" value="STEPSIZE-" />
   <input type="image" id="down" value="DOWN" />
+  <input type="image" class="up2" id="splus" value="STEPSIZE+" />
   <input type="image" class="stop1" id="allstop2" value="STOP Y" />
   </div>
 
@@ -454,7 +499,7 @@ body {
 
    <input class= "padbutton" type="image" id="short" value="NUDGE" />
    <input class= "padbutton" type="image" id="long" value="MAP STEP" />
-   <input class= "padbutton6" type="image" id="open" value="OPEN GEAR" />
+   <input class= "padbutton" type="image" id="open" value="OPEN GEAR" />
    <input class= "padbutton" type="image" id="map" value="NEW MAP" />
 
    <input class= "padbutton" type="image" id="map2" value="MAP ON/OFF" />
@@ -463,10 +508,10 @@ body {
  <br><input type="text" id="msg" style=" color:white; background-color:#000000; height: 100%; width:60% " />
    <input type="image" id="thebutton" class= "padbutton3" value="SEND" /><br><br>
   <input class= "padbutton4" type="image" id="manual" value="MANUAL" />  
- <input class= "padbutton4" type="image" id="in"  value="PIC FOLDER" />
+ <input class= "padbutton4" type="image" id="picf"  value="PIC FOLDER" />
     <input class= "padbutton" type="image" id="in"  value="IN" />
    <input class= "padbutton" type="image" id="out" value="OUT" />
-  <input class= "padbutton" type="image" id="cam2" value="CAM 2" />
+  <input class= "padbutton" type="image" id="cam1" value="CAM 1" />
 
 
 
@@ -479,9 +524,11 @@ body {
 </div>
     </div>
 <div>
-<canvas id="myCanvas" width="544" height="544" style="border:1px solid#ffffff;"></canvas><canvas id="myCanvas" width="544" height="288" style="border:1px solid#000000;"></canvas>
+
+
+<canvas id="myCanvas" width="544" height="544" style="border:1px solid#000000;"></canvas>
+
 </div>
-(c) Copyright 2014   C. Robert Barnett III
 
 </body>
 </html>

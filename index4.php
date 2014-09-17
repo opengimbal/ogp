@@ -237,51 +237,49 @@ body {
 	
 	
 
-	var sender = function() {
+	var sender = function() {  // for sending a message from the manual input field
 	  var msg = $("#msg").val();
 	  if (msg.length > 0)
 	    ws.send(msg);
 	   $("#msg").val(msg);
 	}
 	
-	ws = new WebSocket("ws://192.168.42.1:8888/ws");
-	ws.onmessage = function(evt) {
+	ws = new WebSocket("ws://192.168.42.1:8888/ws"); //opens the message websocket at this port
+	ws.onmessage = function(evt) {  //socket event - message
 
 	  logger(evt.data);
 	};
-	ws.onclose = function(evt) {
+	ws.onclose = function(evt) {  //socket event - closed
 	    $("#log").text("Connection Closed");
 	    $("#thebutton #msg").prop('disabled', true);
 	};
-	ws.onopen = function(evt) { 
+	ws.onopen = function(evt) {    //socket event - open
 	   $("#log").text("OGP-- SOCKET OPEN"); 
 	   	  ws.send('n');
 	   
 	};
 
-	$("#msg").keypress(function(event) {
+	$("#msg").keypress(function(event) {  // manual message send button function
 	    if (event.which == 13) {
 	      sender();
 	    }
 	});
 
-	$("#up").click(function(){
-	 if (dgear == "n"){
+	$("#up").click(function(){   // the rest of these functions handle the buttons
+	 if (dgear == "n"){  // dgear is the directional gear "n" is nudge-gear
 	    
-	  ws.send('y');
+	  ws.send('y');  // sends serial trigger code "y" for nudge up
          }
-	 if (dgear == "m"){
+	 if (dgear == "m"){      // "m" is mapstep-gear
 	  ws.send('w');
 	 }    
-	 if (dgear == "o"){
+	 if (dgear == "o"){       // "o" is open-gear
 	  ws.send('7');
-
 	 }
 	 });
 
-	$("#down").click(function(){
+	$("#down").click(function(){   // another directional button
 	 if (dgear == "n"){
-	    
 	  ws.send('g');
          }
 	 if (dgear == "m"){
@@ -289,13 +287,11 @@ body {
 	 }    
 	 if (dgear == "o"){
 	  ws.send('9');
-
 	 }
 	});
 
-	$("#left").click(function(){
+	$("#left").click(function(){  // left directional button
 	 if (dgear == "n"){
-	    
 	  ws.send('h');
          }
 	 if (dgear == "m"){
@@ -303,11 +299,10 @@ body {
 	 }    
 	 if (dgear == "o"){
 	  ws.send('2');
-
 	 }
 	});
 
-	$("#right").click(function(){
+	$("#right").click(function(){   //right diestional button
 	 if (dgear == "n"){
 	    
 	  ws.send('j');
@@ -317,41 +312,36 @@ body {
 	 }    
 	 if (dgear == "o"){
 	  ws.send('4');
-	
 	 }
 	});
 
-	$("#in").click(function(){
+	$("#in").click(function(){  //focus buttons
 	    ws.send('f');
 	});
-
+	
 	$("#out").click(function(){
 	    ws.send('t');
 	});
 
-	$("#short").click(function(){
-	    
+	$("#short").click(function(){  //gear switch buttons
 	    dgear = "n";
-
-
 	});
 
 	$("#long").click(function(){	
-
-
-	  
 	    dgear = "m";
 	});
+	
 	$("#open").click(function(){
 
 	    dgear = "o";
 	});
-	$("#map").click(function(){
+	
+	$("#map").click(function(){   // new map(aka map reset) button
 	    ws.send('n');
 
 	});
 
-	$("#chase").click(function(){
+	$("#chase").click(function(){  //start chasing button -- with toggle
 	 var yes = "y";
 	 var no = "n";
 
@@ -367,7 +357,8 @@ body {
 	 
 	}
 	});
-	$("#map2").click(function(){
+	
+	$("#map2").click(function(){   // start mapping button -- with toggle
 	 var yes = "y";
 	 var no = "n";
 	 if (mapping == no){
@@ -377,59 +368,53 @@ body {
 	} else if (mapping == yes){
 	  mapping = no;
 	  ws.send('3');
-
-	 
 	}
 	});
 
 
-	$("#autocal").click(function(){
+	$("#autocal").click(function(){  // auto-calibrate button
 	    chasing = "n";
 	    mapping = "n";
 	    ws.send('k');
 	});
 
-	$("#allstop").click(function(){
-
+	$("#allstop").click(function(){   // all stop button
 	    chasing = "n";
 	    ws.send('3');
 	   var ch = 0;
 	});
 
-	$("#allstop2").click(function(){
-
+	$("#allstop2").click(function(){  // all stop button 2
 	    ws.send('8');
 	});
-	$("#cam2").click(function(){
+	
+	$("#cam2").click(function(){   // set cam mode to 2
 
 	    ws.send('c2');
 	});
-	$("#cam1").click(function(){
+	$("#cam1").click(function(){  // set cam mode to 1
 
 	    ws.send('c1');
 	});
-	$("#cam4").click(function(){
+	$("#cam4").click(function(){  // set cam mode to 4
 
 	    ws.send('c4');
 	});
-	$("#cam3").click(function(){
+	$("#cam3").click(function(){  // set cam mode to 3
 
 	    ws.send('c3');
 	});
-	$("#mapsizea").click(function(){
+	$("#mapsizea").click(function(){  //adjust mapsize 
 	    ws.send('p');
 	
 	});
-	$("#cam2").click(function(){
-	    ws.send('c2');
-	
-	});
+
 	$("#mapsizeb").click(function(){
 	    ws.send('l');
 	
 	});
 
-	$("#don").click(function(){
+	$("#don").click(function(){  // junk
 	    ws.send('9');
 
 	});
@@ -442,28 +427,27 @@ body {
 
 	$("#ron").click(function(){
 	    ws.send('4');
-
 	});
-	$("#pic1").click(function(){
+	
+	$("#pic1").click(function(){  // show next pic from folder
 	    ws.send('v');
-
 	});
-	$("#pic2").click(function(){
+	
+	$("#pic2").click(function(){   //show previous pic from folder
 	    ws.send('x');
-
 	});
 
-	$("#thebutton").click(function(){
+	$("#thebutton").click(function(){   //junk, i think
 	    sender();
 	});
-	$("#splus").click(function(){
-
+	$("#splus").click(function(){   // increase stepsize
 	    ws.send('+');
 	});
-	$("#sminus").click(function(){
-
+	
+	$("#sminus").click(function(){   // decrease stepsize
 	    ws.send('-');
 	});
+	
      });
    </script>
 </head>

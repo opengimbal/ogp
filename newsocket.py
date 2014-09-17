@@ -3,12 +3,15 @@
 
 ## uncomment above for autorun at boot------
 
-## OGP Telescope  --  Main Module
+## OGP Telescope  --  Main Module  -- newsocket.py
+## this file is just a switchboard attached to a tornado web socket
+## the socket is in communication with the client 
+## or many clients at once, i havent tested more than 3
 
 ## LIBRARIES 
 
-import tornado.httpserver
-import tornado.websocket
+import tornado.httpserver  ## you will have previously installed these libraries
+import tornado.websocket  
 import tornado.ioloop
 import tornado.web
 import time
@@ -16,7 +19,7 @@ import serial
 import picamera
 from SimpleCV import *
 import os
-## our library
+## our libraries
 from ogp4 import *
 import ircam
 
@@ -30,21 +33,21 @@ js = SimpleCV.JpegStreamer('0.0.0.0:8080')                        ## opens socke
 time.sleep(4)                                               ## strategic buffering, possibly unnecessary
 c2.getImage().save(js.framebuffer)                 ## push a jpeg to the jpeg socket
 
-cam_mode = int(1)
+cam_mode = int(1)   ## set default cam mode
 
 ##autocalibration
-acu = int(1)
-acd = int(1)
-acl = int(1)
+acu = int(1)   ## up and down integers team up to form a fraction 
+acd = int(1)  ## if it takes 3 downs to make 1 up then thats their relation
+acl = int(1)  ## same with left and right
 acr = int(1)
 
-showimage = int(1)
-mapsize = int(8)
-stepsize = int(100)
+showimage = int(1)  ## this is for the "next" and "previous" buttons on the client
+mapsize = int(8)  ## buttons control this
+stepsize = int(100)  ## same here
 
-stat = "ogp"
-s.write('3')
-s.write('8')
+stat = "ogp"   ##status is info relayed through the system to the main display, it can be anything
+s.write('3')  ## send a serial command through to the motor control, 3 means stop x dimension
+s.write('8')  ##  8 is stop Y
 
 
 

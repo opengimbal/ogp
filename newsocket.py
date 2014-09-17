@@ -4,9 +4,10 @@
 ## uncomment above for autorun at boot------
 
 ## OGP Telescope  --  Main Module  -- newsocket.py
-## this file is just a switchboard attached to a tornado web socket
-## the socket is in communication with the client 
-## or many clients at once, i havent tested more than 3
+## This file is mostly just a switchboard attached to a tornado web socket since
+## the simpleCV jpeg streamer handles our image stream in very few lines.
+## the tornado socket enables back and forth serial communication with the client 
+## or many clients at once. i havent tested more than 3
 
 ## LIBRARIES 
 
@@ -14,12 +15,13 @@ import tornado.httpserver  ## you will have previously installed these libraries
 import tornado.websocket  
 import tornado.ioloop
 import tornado.web
-import time  ## comes with python so doesnt need installing
+import time  ## time comes with python so doesnt need installing
 import serial
 import picamera
 from SimpleCV import *
-import os   ## comes with python so doesnt need installing
-## our libraries
+import os   ## os comes with python so doesnt need installing
+
+## our 2 libraries that we've written
 from ogp4 import *
 import ircam
 
@@ -29,6 +31,7 @@ s = serial.Serial('/dev/ttyUSB0', 9600)                     ## serial to arduino
 
 c2 = SimpleCV.Camera(0,{ "width": 544, "height": 288 })          ## opens a camera
 ##c = SimpleCV.Camera(1,{ "width": 544, "height": 288 })           ## or two
+
 js = SimpleCV.JpegStreamer('0.0.0.0:8080')                        ## opens socket for jpeg out
 time.sleep(4)                                               ## strategic buffering, possibly unnecessary
 c2.getImage().save(js.framebuffer)                 ## push a jpeg to the jpeg socket
@@ -41,12 +44,13 @@ acd = int(1)  ## if it takes 3 downs to make 1 up then thats their relation
 acl = int(1)  ## same with left and right
 acr = int(1)
 
-showimage = int(1)  ## this is for the "next" and "previous" buttons on the client
-mapsize = int(8)  ## buttons control this
-stepsize = int(100)  ## same here
+showimage = int(1)  ## showimage = current image number for the "next" and "previous" buttons on the client
+mapsize = int(8)  ## mapsize adjustment buttons control this
+stepsize = int(100)  ## stepsize adjustment buttons control this 
 
-stat = "ogp"   ##status is info relayed through the system to the main display, it can be anything
-s.write('3')  ## send a serial command through to the motor control, 3 means stop x axis movement
+stat = "ogp"   ## stat = current status or info relayed through the system to the main display, it can be anything
+
+s.write('3')  ## send a serial command through to the arduino motor control. 3 means stop x axis movement
 s.write('8')  ##  8 is stop Y axis movement
 
 

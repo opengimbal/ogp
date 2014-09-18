@@ -270,60 +270,60 @@ class chase(object):      ## CHASE the Blob !!
       ##  c = self.c
         js = self.js
         wsh2 = self.wsh2
-        ms = 50
+        ms = 50         ## nudge size
         d = "n"
-        acu = int(1)
+        acu = int(1)    ## autocalibration settings
         acd = int(1)
         acl = int(1)
         acr = int(1)
-        irpic = pinoir2(js)
+        irpic = pinoir2(js)   ## needs more arguments now -- should get a pic and drop it
 
-        img1 = Image('imagesmall.jpg')
+        img1 = Image('imagesmall.jpg')  ##pic your image back up
         
-        blobs = img1.findBlobs()
-        if blobs :
+        blobs = img1.findBlobs()   ##  get blob info on image
+        if blobs :                  ##  if blobs then draw the centroid indicators
             img1.drawCircle((blobs[-1].x,blobs[-1].y),30,color=(255,255,255))
             img1.drawCircle((blobs[-1].centroid()),10,color=(255,100,100))
         
 
-            blobx1 = blobs[-1].x
+            blobx1 = blobs[-1].x    ## save centroid data as variables
             bloby1 = blobs[-1].y
 
-            print blobx1
+            print blobx1    ## debug
             print bloby1
         
-            img1.drawText("ogp: tracking", 10, 10, fontsize=50)
+            img1.drawText("ogp: tracking", 10, 10, fontsize=50)     ##  draw onto the image
             img1.drawText(str(blobx1), 10, 200, color=(255,255,255), fontsize=50)
             ##img1.drawText(str(bloby1), 50, 200, color=(255,255,255), fontsize=50)
             img1.drawText(str(bloby1), 10, 250, color=(255,255,255), fontsize=50)
-            img1.save(js.framebuffer)
+            img1.save(js.framebuffer)      ##  send the image to the client
            ## time.sleep(1)
 
-            if blobx1 > 300:
-                d = 'r'
-                s.write('4')
-                mov = acx(s, d, ms, acu, acd, acl, acr)
+            if blobx1 > 300:     ## if the blob is to the right of pixel 300
+                d = 'r'      ## then the motor nudges right
+                s.write('4')  ## sets the motor to run open and to the right
+                mov = acx(s, d, ms, acu, acd, acl, acr)  ## acx is a timer that waits and then stops the motor
                 mov.run()
-            if blobx1 < 260:
+            if blobx1 < 260:   ## to the left
                 d = 'l'
                 s.write('2')
                 mov = acx(s, d, ms, acu, acd, acl, acr)
                 mov.run()
-            if bloby1 > 180:
+            if bloby1 > 180:   ## down
                 d = 'd'
                 s.write('9')
                 mov = acx(s, d, ms, acu, acd, acl, acr)
                 mov.run()
-            if bloby1 < 140:
+            if bloby1 < 140:   ## up
                 d = 'u'
                 s.write('6')
                 mov = acx(s, d, ms, acu, acd, acl, acr)
                 mov.run()
             
-            wsh.write_message(wsh2, "c_" + str(d) + "_" + str(bloby1) )
+            wsh.write_message(wsh2, "c_" + str(d) + "_" + str(bloby1) )   ## relays chasing info and triggers the next round of chasing
 
         else:
-            wsh.write_message(wsh2, "c_" + "null" )
+            wsh.write_message(wsh2, "c_" + "null" )  ## if theres no blob then relay that info and trigger next round of chasing
 
 
 

@@ -1,86 +1,98 @@
+## OGP Class Library 1
+## contains MAP(so), CHASE, ACX, & HUD
+
 #!/usr/bin/env python2
-# ogp.py
+# ogp4.py
+
+## LIBRARIES IN USE
 
 import time
 import serial
 import os
-import ircam
+import ircam    ## our library
 import picamera
 
 from SimpleCV import Camera, Image
 
-mySet = set()
-brightpixels = 0
-darkpixels = 0
+## ENVIRONMENT VARIABLES are likely not in use since this isn't main module.
 
+## for Mapping
+mySet = set()
+brightpixels = 0   ## these are couter-intuitive and might need to be switched
+darkpixels = 0
 l = int(4)
 s = serial.Serial('/dev/ttyUSB0', 9600)
 
-class so(object):
 
-    def __init__(self, side, m, js, wsh, wsh2):
-        self.ms = m
-        self.js = js
-        self.wsh = wsh
-        self.wsh2 = wsh2
-        self.m = m
+
+class so(object):    ## aka Mapper    (btw this is broken, it gets to frame 4 and stops dropping thumbnails)
+
+    def __init__(self, side, m, js, wsh, wsh2):  ## this definition gets your variables to become available
+        self.ms = m     ## milliseconds of movement
+        self.js = js    ## name of the javascript framebuffer for image out
+        self.wsh = wsh  ## a redundant variable i accidentally created. wsh always equals "tornado.websocket.WebSocketHandler"
+        self.wsh2 = wsh2 ## wsh2 is the name of the current instance of the main loop
+        self.m = m   ## is depricated, probably isnt used anymore
       ##  self.c = c
-        self.l = side
-        self.brightpixels = 11
-        self.darkpixels = 11
-        self.x = 0
-        self.y = 0
-        self.w = 0
-        self.p = 1
+        self.l = side   ## size of the map in units squared
+        self.brightpixels = 11   ## this becomes the size of the dark side of the histogram readout
+        self.darkpixels = 11   ## this variable becomes size of the bright side of the histogram readout
+        self.x = 0  ## x axis location on grid
+        self.y = 0    ## y axis location on grid
+        self.w = 0  ## is histogram info for display on the viewfinder
+        self.p = 1   ## is the picture number
         
 
-        l = self.l
-        x = -1
-        y = -1
-        l = self.l
+        l = self.l   ## size of side packed away
+        x = -1      ## reset of the map happens here
+        y = -1      
 
-
-        self.countdownA = int(self.l)
-        self.countdownB = int(self.l)
-        self.countdownC = -1
+        self.countdownA = int(self.l)   ## these three counters control the back and forth sweeping motion
+        self.countdownB = int(self.l)     ## first they are loaded with the size of the intended map
+        self.countdownC = -1          
         
 
 
-    def histo(self):
-        i = 0
-        js = self.js
-        ms = self.ms
-        w = self.w
+    def histo(self):    ## performs a histogram on the image and saves image and thumb in the image and thumb folders
+    
+    ## so... declare your variable states
+        i = 0      ## will become the counter of histogram cross sections
+        js = self.js   ## is the image output socket
+        ms = self.ms   ## stepsize
+        w = self.w   ## z axis info for future use
        ## c = self.c
-        cent = 0
-        rgb1 = 0
+        cent = 0   ##  for use with blob detector section
+        rgb1 = 0   ## for use with blob detector section
 
-        brightpixels = 0
+        brightpixels = 0    ## zero out the function
         darkpixels = 0
         wsh = self.wsh 
         wsh2 = self.wsh2
         s.write('s')
+        stat = "ogp - mapping"
+        
+    ##begin the machine...
+    ## first a picture is taken
+        
         with picamera.PiCamera() as camera:
             camera.resolution = (544, 288)
             camera.capture('imagesmall.jpg')
         img1 = Image('imagesmall.jpg')
-        
-        time.sleep(1)
-        
+
+        time.sleep(1) ## BUFFERING POSSIBLY UNNECESSARY
         ##img1.save(d)
-        hist = img1.histogram(20)
-        stat = "ogp - mapping"
+        hist = img1.histogram(20)    ## histogram will have 20 cross sections
 
-        while i < 20:
-            if (i < 10):
-                darkpixels = darkpixels + hist[i]
-                self.darkpixels = darkpixels
+        while i < 20:    ## this iterates through the cross sections
+            if (i < 10):  ## histogram produces a line graph of light to dark ratios, 10 is halfway through the graph
+                darkpixels = darkpixels + hist[i] ## seems backwards i know. this part needs refinement but
+                self.darkpixels = darkpixels  ## it has seemed to work
             else:
-                brightpixels = brightpixels + hist[i]
-                self.brightpixels = brightpixels
-            i = i + 1
+                brightpixels = brightpixels + hist[i]   ## the opposite for testing purposes
+                self.brightpixels = brightpixels    ## saves away this data
+            i = i + 1   ## moves you forward one cross section at a time 
 
-        if (darkpixels > 0):
+        if (darkpixels > 0):  ## if you have a "bright" image then all this happens...
             print "bright"
             x = self.x
             y = self.y
@@ -90,91 +102,93 @@ class so(object):
             self.w = darkpixels
             z = w
          
-            
-            thumbnail = img1.crop(100,0,300,300)
-##            thumbnail = thumbnail.dilate(10)
+            thumbnail = img1.crop(100,0,300,300)     ## make a thumbnail
+##            thumbnail = thumbnail.dilate(10)   ##this wouild kind of amplify the light 
             thumbnail = thumbnail.scale(20,20)
 
-            thumb1 = "/var/www/images/thumbs/thumb"
+            thumb1 = "/var/www/images/thumbs/thumb"  ## name the thumbs location
             thumb3 = ".png"
             thumbpath = thumb1 + str(p) + thumb3
-            thumbnail.save(thumbpath)
+            thumbnail.save(thumbpath)    ## and save it
 
-            hud1 = hud(img1, js, stat, x, y, z)
-            hud1.run()
+            hud1 = hud(img1, js, stat, x, y, z)   ## send image away for processing (then sending to client)
+            hud1.run()   
 
-            blobs = img1.findBlobs()
+            blobs = img1.findBlobs()                            ## get blob info of image
             time.sleep(1)
-            if blobs :
+            if blobs :    ## draw the indicators
                 img1.drawCircle((blobs[-1].x,blobs[-1].y),30,color=(255,255,255))
                 img1.drawCircle((blobs[-1].centroid()),10,color=(255,100,100))
-                print blobs[-1].meanColor()
+                print blobs[-1].meanColor()                    ## get info from the blob centroid
                 rgb1 = blobs[-1].meanColor()
                 cent = blobs[-1].centroid()
 
             
-            pth1 = "/var/www/images/image"
+            pth1 = "/var/www/images/image"                    ## save image
             pth3 = ".png"
             pth = pth1 + str(p) + pth3
             print pth
             img1.save(pth)
-            apath = os.path.abspath(pth)
+            
+            apath = os.path.abspath(pth)                ## some debugging
             ##wsh.write_message(wsh2, str(apath) )
 
-            self.p = p
+            self.p = p ## p is the pic number
             
-            mySet.add((p,x,y,w,cent,rgb1))
-            self.mySet = mySet
+            mySet.add((p,x,y,w,cent,rgb1))   ## these two lines collect up your current info 
+            self.mySet = mySet                 ## and add it into a large set of info 
             
-            wshx = str(self.x)
+            wshx = str(self.x)             #this is the data that is about to get socketed to the client
             wshy = str(self.y)
-            wsh.write_message(wsh2, "d_" + wshx + "_" + wshy + "_" + str(p) )
-            wsh.write_message(wsh2, "rgb_" + str(rgb1))
-            wsh.write_message(wsh2, "x_" + str(cent) )
+            ## d commands the client to draw a thumb into its html5 canvas
+            ## x and y are the location of the thumb on the map, and p is the image reference number
+            wsh.write_message(wsh2, "d_" + wshx + "_" + wshy + "_" + str(p) )   
+            wsh.write_message(wsh2, "rgb_" + str(rgb1))    ## rgb data
+            wsh.write_message(wsh2, "x_" + str(cent) )    ## centroid data
 
-        else:
-            wshx = str(self.x)
+        else:    ## if the frame is dark then pretty much nothing happens
+            wshx = str(self.x)  
             wshy = str(self.y)
             wsh.write_message(wsh2, wshx + " " + wshy + "dark")
- 
             print "dark"
 
 
-    def run(self):
-        wsh = self.wsh 
-        wsh2 = self.wsh2
-        acu = int(1)
+    def run(self):     ## when a map is begun, this definition more or less...
+        wsh = self.wsh   ## draws the line that goes back and forth to complete the
+        wsh2 = self.wsh2  ## square of any given size.
+        acu = int(1)  ## this is the auto-calibrate function
         acd = int(1)
-        acl = int(3)
+        acl = int(1)
         acr = int(1)
-        countdownA = self.countdownA
-        countdownB = self.countdownB
+        countdownA = self.countdownA   ## load the current mapsize
+        countdownB = self.countdownB    
         countdownC = self.countdownC
-        ms = self.ms
-        x = self.x
+        ms = self.ms   ## movement in milliseconds
+        x = self.x   ## x and y coordinates
         y = self.y
-        if countdownA > 0:
-                
-
-            if countdownC == 1:
-                countdownB = int(self.l)
+        
+        if countdownA > 0:                      ## heres where the madness begins
+            if countdownC == 1:               ## describing a cascading series of countdowns
+                countdownB = int(self.l)     ## that make a grid. 
                 countdownC = -1
                 print "down"
-                d = 'd'
-                s.write('9')
-                mov = acx(s, d, ms, acu, acd, acl, acr)
+                d = 'd'                                         ## so that acx knows we're going direction down
+                s.write('9')                                    ## triggers the down motor to run open 
+                mov = acx(s, d, ms, acu, acd, acl, acr)   ## acx is a timer, it pauses and then stops the motor
                 mov.run()
-                y = y - 1
-                self.y = y
-                time.sleep(1)
-                elf = self.histo()
-                time.sleep(1)
-                countdownA -=1
-                wsh.write_message(wsh2, "m" )
-                self.countdownA = countdownA
+                y = y - 1                 ## bring the position up to date
+                self.y = y              
+                time.sleep(1)            ## buffering possibly uneccessary
+                elf = self.histo()         ##   elves bring you the histogram info
+                time.sleep(1)                 ## more buffering
+                countdownA -=1                   ## iterate though the countdown
+                wsh.write_message(wsh2, "m" )    ## sending an "m" to the client causes the mapping to continue another step
+                
+                self.countdownA = countdownA   ## update our counters
                 self.countdownB = countdownB
                 self.countdownC = countdownC
-            if countdownC > 1:
+                
+            if countdownC > 1:       ## same as before but left now
                 print "left"
                 countdownC -= 1
                 d = 'l'
@@ -193,7 +207,7 @@ class so(object):
                 self.countdownB = countdownB
                 self.countdownC = countdownC
             
-            if countdownB == 1:
+            if countdownB == 1:   ## same as before but "right" now
                 countdownC = int(self.l)
                 countdownB = -1
                 print "down"
@@ -211,13 +225,13 @@ class so(object):
                 self.countdownA = countdownA
                 self.countdownB = countdownB
                 self.countdownC = countdownC
-                
-                print self.l
+                print self.l                        ##debugging
                 print countdownC
                 print self.countdownC
-            if countdownB > 1:
-                print "right"
-                countdownB-=1
+                
+            if countdownB > 1:       ## same as before but right...
+                print "right"     ## you'll notice that these four parts actually happen in reverse order.
+                countdownB-=1     ## the mapper moves right first... until counter B runs down. 
                 d = 'r'
                 s.write('4')
                 mov = acx(s, d, ms, acu, acd, acl, acr)
@@ -231,25 +245,20 @@ class so(object):
                 time.sleep(1)
                 wsh.write_message(wsh2, "m" )
                 
-                self.countdownA = countdownA
+                self.countdownA = countdownA       ## updates all counters
                 self.countdownB = countdownB
                 self.countdownC = countdownC
 
-
-
-
-        else:
+        else:                            ## if its done mapping then this should happen
             wsh = self.wsh
             wsh2 = self.wsh2
-
-            wsh.write_message(wsh2, str(mySet) )
-
+            wsh.write_message(wsh2, str(mySet) )  ## outputs the entire set of data all at once
             print "done"
 
 
 
-class chase(object):
-    def __init__(self, js, wsh, wsh2):
+class chase(object):      ## CHASE the Blob !!
+    def __init__(self, js, wsh, wsh2):     ## these variables allow for websocket communications on both channels
         self.js = js
         self.wsh = wsh
         self.wsh2 = wsh2

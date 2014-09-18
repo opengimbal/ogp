@@ -327,10 +327,10 @@ class chase(object):      ## CHASE the Blob !!
 
 
 
-class autocal(object):
-    def __init__(self, js, wsh, wsh2):
-        self.js = js
-        self.wsh = wsh
+class autocal(object):                                ## when you press the AC button this class is supposed to 
+    def __init__(self, js, wsh, wsh2):            ##  gather autocalibrate data from a single 
+        self.js = js                            ## blob centroid. preferably a star.
+        self.wsh = wsh                       
         self.wsh2 = wsh2
       ##  self.c = c
     
@@ -344,22 +344,22 @@ class autocal(object):
         acd = int(1)
         acl = int(1)
         acr = int(1)
-        irpic = pinoir2(js)
+        irpic = pinoir2(js)                                  ## it takes a pic...
 
         img1 = Image('imagesmall.jpg')   
         blobs = img1.findBlobs()
         img1.drawCircle((blobs[-1].x,blobs[-1].y),30,color=(255,255,255))
         img1.drawCircle((blobs[-1].centroid()),10,color=(255,100,100))
-        acx1 = blobs[-1].x
+        acx1 = blobs[-1].x                                    ## grabs the centroid data...
         acy1 = blobs[-1].y
 
 
         img1.drawText("ogp: autocalibrating", 10, 10, fontsize=50)
         img1.drawText(str(acx1), 10, 50, color=(255,255,255), fontsize=20)
         img1.drawText(str(acy1), 10, 75, color=(255,255,255), fontsize=20)
-        img1.save(js.framebuffer)
+        img1.save(js.framebuffer)                             ## sends marked up image to client...
         
-        d = 'r'
+        d = 'r'                                               ## it moves..
         ms = 50
         s.write('4')
         mov = acx(s, d, ms, acu, acd, acl, acr)
@@ -367,11 +367,11 @@ class autocal(object):
             
         time.sleep(1)
 
-        img1 = c.getImage()   
+        img1 = c.getImage()                                   ## gets another image...
         blobs = img1.findBlobs()
         img1.drawCircle((blobs[-1].x,blobs[-1].y),30,color=(255,255,255))
         img1.drawCircle((blobs[-1].centroid()),10,color=(255,100,100))
-        acx2 = blobs[-1].x
+        acx2 = blobs[-1].x                                  ## gets the new centroid data...
         acy2 = blobs[-1].y
 
         
@@ -380,9 +380,9 @@ class autocal(object):
         img1.drawText(str(acy1), 10, 75, color=(255,255,255), fontsize=20)        
         img1.drawText(str(acx2), 40, 50, color=(255,255,255), fontsize=20)
         img1.drawText(str(acy2), 40, 75, color=(255,255,255), fontsize=20)
-        img1.save(js.framebuffer)
+        img1.save(js.framebuffer)                           ## and sends the new image to the client...
         
-        d = 'd'
+        d = 'd'                               ## it moves again and so on... in the 4 directions
         ms = 50
         s.write('9')
         mov = acx(s, d, ms, acu, acd, acl, acr)
@@ -460,10 +460,11 @@ class autocal(object):
         cal3 = acx3 - acx4
         cal4 = acy4 = acy5
         time.sleep(2)
+           ##outputs info to the socketed client field
         wsh.write_message(wsh2, "x_" + str(cal1) + "_" + str(cal2) + "_" + str(cal3)+ "_" + str(cal4) )
 
 
-class hud2(object):
+class hud2(object):       ## this has been replaced by pinoir2
     def __init__(self, img1, js, stat, x, y, z):
         self.img1 = img1
         self.js = js
@@ -472,7 +473,6 @@ class hud2(object):
         self.y = y
         self.z = z
         
-    
     def run(self):        
         img1 = self.img1
         js = self.js
@@ -482,8 +482,6 @@ class hud2(object):
         z = self.z
         cent = 0
         rgb1 = 0
-        
-
         
         blobs = img1.findBlobs()
         if blobs:
@@ -497,7 +495,6 @@ class hud2(object):
             rgb1 = blobs[-1].meanColor()
             cent = blobs[-1].centroid()
             
-
         img1.drawText(str(stat), 10, 10, fontsize=50)
         img1.drawText(str(x), 10, 70, color=(255,255,255), fontsize=25)
         img1.drawText(str(y), 10, 100, color=(255,255,255), fontsize=25)
@@ -507,7 +504,7 @@ class hud2(object):
         img1.drawText(str(rgb1), 10, 270, color=(255,255,255), fontsize=15)
         img1.save(js.framebuffer)
 
-class hud(object):
+class hud(object):    ## this is image post production for the histogram
     def __init__(self, img1, js, stat, x, y, z):
         self.img1 = img1
         self.js = js
@@ -516,7 +513,6 @@ class hud(object):
         self.y = y
         self.z = z
         
-    
     def run(self):        
         img1 = self.img1
         js = self.js
@@ -527,8 +523,6 @@ class hud(object):
         cent = 0
         rgb1 = 0
         
-
-        
         blobs = img1.findBlobs()
         if blobs:
       
@@ -537,7 +531,6 @@ class hud(object):
             rgb1 = blobs[-1].meanColor()
             cent = blobs[-1].centroid()
             
-
         img1.drawText(str(stat), 10, 10, fontsize=50)
         img1.drawText(str(x), 10, 70, color=(255,255,255), fontsize=25)
         img1.drawText(str(y), 10, 100, color=(255,255,255), fontsize=25)
@@ -548,7 +541,7 @@ class hud(object):
         img1.save(js.framebuffer)
 
 
-class acx(object):
+class acx(object):        ## acx is supposed to adjust the stepsize according to the 4 ac variables
     def __init__(self, s, d, ms, acu, acd, acl, acr):
 
         self.s = s
@@ -574,7 +567,7 @@ class acx(object):
 
         acu1 = ms * acu
         acd1 = ms * acd
-        acl1 = ms * 1.25
+        acl1 = ms * acl
         acr1 = ms * acr
         i = int(0)
 
@@ -606,7 +599,7 @@ class acx(object):
 
 
 
-if __name__ == '__main__'  :
+if __name__ == '__main__'  :       ## this isn't the main module so this part won't happen
     foo = so(2)
     foo.histo()
     foo.run()

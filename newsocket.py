@@ -354,7 +354,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):  ## this is the switchboard
             self.write_message("echo: " + message + "4")
             
 
-        if message =='7':    ## same as the previous open directionals except that this one should be UP or DOWN, depending.
+        if message =='7':    ## same as the previous open directionals except that this one should be UP 
             print "7"
             s.write('6')     ## the nature of the pulley makes it difficult to determine which direction this will take you
             self.write_message("echo: " + message + " 7")   ## so be ready to hit the stop Y button
@@ -368,7 +368,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):  ## this is the switchboard
             irpic.run()
 
 
-        if message =='9':    ## OPEN GEAR Y AXIS DIRECTION UNKNOWN
+        if message =='9':    ## OPEN GEAR Y AXIS DIRECTION UNKNOWN but should end up as down
             print "9"
             s.write('9')    ## this starts the motor, BE READY TO STOP IT.
             self.write_message("echo: " + message + " 9")

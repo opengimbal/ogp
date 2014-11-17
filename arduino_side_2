@@ -8,7 +8,6 @@
 
 char val = 'n';         // variable to receive data from the serial port 
 
-
 Servo myservo;         // create servo objects
 Servo myservo2; 
 AF_DCMotor motor(2);     //create dc motor object

@@ -12,7 +12,6 @@ from ogplab import *
 l = int(4)
 s = serial.Serial('/dev/ttyUSB0', 9600)
 
-
 class chase2(object):
     def __init__(self, js, wsh, wsh2, c2, sqx, sqy):
         self.js = js

@@ -216,7 +216,6 @@ class so(object):
 
 
 
-
         else:
             wsh = self.wsh
             wsh2 = self.wsh2

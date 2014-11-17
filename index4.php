@@ -87,7 +87,6 @@ div.centre
 	min-width: 850px;
 	min-height: 600px;
 }
-
 input.padbutton
 { 
 width:80px;
@@ -101,8 +100,6 @@ width:100px;
  height:100px;
  background-color: red;
 }
-
-
 input.padbutton3
 { 
 width:80px;
@@ -121,14 +118,12 @@ div.log
 box-shadow: 0px 0px 0px 0px
 height:120px;
 }
-
 input.padbutton4
 { 
 width:100px;
  color:white;
  height:30px;
 }
-
 div.bottom{
 	max-height: 250px;
 	columns: 200px 3 ;
@@ -136,11 +131,9 @@ div.bottom{
 	z-index:0;
 }
 body {	
-	
 	text-align: center;
 	background-color: #000000;
      }
-
 </style>
 
 <script src="http://192.168.42.1/jquery-1.11.0.min.js"></script>

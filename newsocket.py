@@ -47,7 +47,6 @@ stat = "ogp"
 s.write('3')
 s.write('8')
 
-
 sqx = int(272)
 sqy = int(144)
 

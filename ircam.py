@@ -1,187 +1,153 @@
-#!/usr/bin/env python2
-# chase2.py
-
-import time
-import serial
-import os
-import ircam
+from SimpleCV import *
 import picamera
-from SimpleCV import Camera, Image
-from ogplab import *
+import time
+from time import sleep
+from fractions import Fraction
+##js = SimpleCV.JpegStreamer('0.0.0.0:8080')                        ## opens socket for jpeg out
 
-l = int(4)
-s = serial.Serial('/dev/ttyUSB0', 9600)
-
-class chase2(object):
-    def __init__(self, js, wsh, wsh2, c2, sqx, sqy):
+class pinoir2(object):
+    def __init__(self, js, cam_mode, c2, x, y, z, stat, sqx,sqy):
         self.js = js
-        self.wsh = wsh
-        self.wsh2 = wsh2
-        self.c2=c2
+        self.cam_mode = cam_mode
+        self.c2 =c2
+        self.js = js
+        self.stat = stat
+        self.x = x
+        self.y = y
+        self.z = z
         self.sqx=sqx
         self.sqy=sqy
         
     def run(self):
-        cam_mode=1
-        s.write('s')
-        wsh = self.wsh
-        js = self.js
-        wsh2 = self.wsh2
-        ms = 50
-        d = "n"
-        acu = int(1)
-        acd = int(1)
-        acl = int(1)
-        acr = int(1)
-        c2=self.c2
-        sqx=self.sqx
+        stat = self.stat
+        cent = 0
+        rgb1 = 0
+        x = self.x
+        y = self.y
+        z = self.z
+        sqx =self.sqx
         sqy=self.sqy
-        x=0
-        y=0
-        stat="cam1"
-        img1 = c2.getImage()
+        c2 = self.c2
+        cam_mode = self.cam_mode
+        js = self.js
+        print cam_mode
+        if cam_mode == 1:
+            with picamera.PiCamera() as camera:
+                camera.resolution = (544, 288)
+                camera.capture('imagesmall.jpg')
+            img1 = Image('imagesmall.jpg')
+            self.img1 = img1
+            blobs = img1.findBlobs()
+            if blobs:
+                img1.drawCircle((blobs[-1].x,blobs[-1].y),30,color=(255,255,255))
+                img1.drawCircle((blobs[-1].centroid()),10,color=(255,100,100))
+                rgb1 = blobs[-1].meanColor()
+                cent = blobs[-1].centroid()
 
-        blobs = img1.findBlobs()
-        if blobs :
-            img1.drawCircle((blobs[-1].x,blobs[-1].y),30,color=(255,255,255))
-            img1.drawCircle((blobs[-1].centroid()),10,color=(255,100,100))
-            blobx1 = blobs[-1].x
-            bloby1 = blobs[-1].y
-            print blobx1
-            print bloby1
-            img1.drawText("ogp: centering", 10, 10, fontsize=50)
-            img1.drawText(str(blobx1), 10, 200, color=(255,255,255), fontsize=50)
-            ##img1.drawText(str(bloby1), 50, 200, color=(255,255,255), fontsize=50)
-            img1.drawText(str(bloby1), 10, 250, color=(255,255,255), fontsize=50)
-            img1.save(js.framebuffer)
-            sqx2=sqx+20
-            sqy2=sqy+20
+            img1.drawText(str(stat), 10, 10, fontsize=50)
+            img1.drawText(str(x), 10, 70, color=(255,255,255), fontsize=25)
+            img1.drawText(str(y), 10, 100, color=(255,255,255), fontsize=25)
             
-            if blobx1 > sqx2:
-                d = 'r'
-                s.write('4')
-                mov = acx(s, d, ms, acu, acd, acl, acr)
-                mov.run()
-                wsh.write_message(wsh2, "m_"+ str(d))
+            img1.drawText(str(z), 10, 230, color=(255,255,255), fontsize=15)
+            img1.drawText(str(cent), 10, 250, color=(255,255,255), fontsize=15)
+            img1.drawText(str(rgb1), 10, 270, color=(255,255,255), fontsize=15)
+            img1.save(js.framebuffer)
+            
+        if cam_mode == 2:
+            with picamera.PiCamera() as camera:
+                camera.resolution = (2600, 1900)
+                camera.capture('/var/www/imagebig.jpg')
+            img1 = Image('/var/www/imagebig.jpg')
+            self.img1 = img1
+            cent = 0
+            rgb1 = 0
+    
+            blobs = img1.findBlobs()
+            if blobs:
+                crop1 = blobs[-1].x
+                crop2 = blobs[-1].y
+                crop3 = crop1 - 294
+                crop4 = crop2 - 144
+                img1 = img1.crop(crop3,crop4,544,288)
+                
+            blobs = img1.findBlobs()
+            if blobs:
+                img1.drawCircle((blobs[-1].x,blobs[-1].y),30,color=(255,255,255))
+                img1.drawCircle((blobs[-1].centroid()),10,color=(255,100,100))
+                rgb1 = blobs[-1].meanColor()
+                cent = blobs[-1].centroid()
+                img1.drawText(str(cent), 10, 250, color=(255,255,255), fontsize=15)
+                img1.drawText(str(rgb1), 10, 270, color=(255,255,255), fontsize=15)
 
-            if blobx1 < sqx:
-                d = 'l'
-                s.write('2')
-                mov = acx(s, d, ms, acu, acd, acl, acr)
-                mov.run()
-                wsh.write_message(wsh2, "m_"+ str(d))
+            img1.drawText(str(stat), 10, 10, fontsize=50)
+            img1.drawText(str(x), 10, 70, color=(255,255,255), fontsize=25)
+            img1.drawText(str(y), 10, 100, color=(255,255,255), fontsize=25)
+            img1.drawText(str(z), 10, 230, color=(255,255,255), fontsize=15)
+            img1.save(js.framebuffer)
 
-            if bloby1 > sqy2:
-                d = 'd'
-                s.write('9')
-                mov = acx(s, d, ms, acu, acd, acl, acr)
-                mov.run()
-                wsh.write_message(wsh2, "m_"+ str(d))
-
-            if bloby1 < sqy:
-                d = 'u'
-                s.write('6')
-                mov = acx(s, d, ms, acu, acd, acl, acr)
-                mov.run()
-                wsh.write_message(wsh2, "m_"+ str(d))
-
-            else:
-                print "else"            
-            wsh.write_message(wsh2, "c")
-
-        else:
-            wsh.write_message(wsh2, "c_" + "null" )
-
-
-
-class chase3(object):
-    def __init__(self, js, wsh, wsh2, c2, sqx, sqy, cam_mode):
-        self.cam_mode=cam_mode
-        self.js = js
-        self.wsh = wsh
-        self.wsh2 = wsh2
-        self.c2=c2
-        self.sqx=sqx
-        self.sqy=sqy
-        
-    def run(self):
-        cam_mode=self.cam_mode
-        s.write('s')
-        wsh = self.wsh
-        js = self.js
-        wsh2 = self.wsh2
-        ms = 50
-        d = "n"
-        acu = int(1)
-        acd = int(1)
-        acl = int(1)
-        acr = int(1)
-        c2=self.c2
-        sqx=self.sqx
-        sqy=self.sqy
-        x=0
-        y=0
-        stat="centering"
         if cam_mode == 3:
             img1 = c2.getImage()
-        if cam_mode==1:
-            with picamera.PiCamera() as camera:
-                camera.resolution = (544, 288)
-                camera.capture('imagesmall.jpg')
-            img1 = Image('imagesmall.jpg')
-        if cam_mode==2:
-            with picamera.PiCamera() as camera:
-                camera.resolution = (544, 288)
-                camera.capture('imagesmall.jpg')
-            img1 = Image('imagesmall.jpg')
-        self.img1 = img1
+            blobs = img1.findBlobs()
+            if blobs:
+                img1.drawCircle((blobs[-1].x,blobs[-1].y),30,color=(255,255,255))
+                img1.drawCircle((blobs[-1].centroid()),10,color=(255,100,100))
+                rgb1 = blobs[-1].meanColor()
+                cent = blobs[-1].centroid()
+                img1.drawText(str(cent), 10, 250, color=(255,255,255), fontsize=15)
+                img1.drawText(str(rgb1), 10, 270, color=(255,255,255), fontsize=15)
 
-        blobs = img1.findBlobs()
-        if blobs :
-            ##blobs.draw()
-            img1.drawCircle((blobs[-1].x,blobs[-1].y),30,color=(255,255,255))
-            img1.drawCircle((blobs[-1].centroid()),10,color=(255,100,100))
-            blobx1 = blobs[-1].x
-            bloby1 = blobs[-1].y
-            print blobx1
-            print bloby1
-            img1.drawText("ogp: centering", 10, 10, fontsize=50)
-            img1.drawText(str(blobx1), 10, 200, color=(255,255,255), fontsize=50)
-            ##img1.drawText(str(bloby1), 50, 200, color=(255,255,255), fontsize=50)
-            img1.drawText(str(bloby1), 10, 250, color=(255,255,255), fontsize=50)
+            img1.drawText(str(stat), 10, 10, fontsize=50)
+            img1.drawText(str(x), 10, 70, color=(255,255,255), fontsize=25)
+            img1.drawText(str(y), 10, 100, color=(255,255,255), fontsize=25)
+
+            img1.drawRectangle(sqx,sqy,25, 25,color=(255,255,255))
+            img1.drawText(str(z), 10, 230, color=(255,255,255), fontsize=15)
             img1.save(js.framebuffer)
-            sqx2=sqx+20
-            sqy2=sqy+20
+        if cam_mode == 4:
+            with picamera.PiCamera() as camera:
+                camera.resolution = (2600, 1900)
+                camera.framerate = Fraction(1, 6)
+                camera.shutterspeed = 6000000
+                camera.exposure_mode = 'verylong'
+                camera.iso = 800
+                sleep(10)
+                camera.capture('/var/www/dark.jpg')
+            img1 = Image('/var/www/dark.jpg')
+            self.img1 = img1
+            cent = 0
+            rgb1 = 0
+    
+            blobs = img1.findBlobs()
+            if blobs:
+                crop1 = blobs[-1].x
+                crop2 = blobs[-1].y
+                crop3 = crop1 - 294
+                crop4 = crop2 - 144
+                img1 = img1.crop(crop3,crop4,544,288)
+                
+            blobs = img1.findBlobs()
+            if blobs:
+                img1.drawCircle((blobs[-1].x,blobs[-1].y),30,color=(255,255,255))
+                img1.drawCircle((blobs[-1].centroid()),10,color=(255,100,100))
+                rgb1 = blobs[-1].meanColor()
+                cent = blobs[-1].centroid()
+                img1.drawText(str(cent), 10, 250, color=(255,255,255), fontsize=15)
+                img1.drawText(str(rgb1), 10, 270, color=(255,255,255), fontsize=15)
 
-            if blobx1 > sqx2:
-                d = '_r'
-                s.write('4')
-                mov = acx(s, d, ms, acu, acd, acl, acr)
-                mov.run()
-                wsh.write_message(wsh2, "g_"+ str(d))
-
-            if blobx1 < sqx:
-                d = 'l'
-                s.write('2')
-                mov = acx(s, d, ms, acu, acd, acl, acr)
-                mov.run()
-                wsh.write_message(wsh2, "g_"+ str(d))
-
-            if bloby1 > sqy2:
-                d = 'd'
-                s.write('9')
-                mov = acx(s, d, ms, acu, acd, acl, acr)
-                mov.run()
-                wsh.write_message(wsh2, "g_"+ str(d))
-
-            if bloby1 < sqy:
-                d = 'u'
-                s.write('6')
-                mov = acx(s, d, ms, acu, acd, acl, acr)
-                mov.run()
-                wsh.write_message(wsh2, "g_"+ str(d))
+            img1.drawText(str(stat), 10, 10, fontsize=50)
+            img1.drawText(str(x), 10, 70, color=(255,255,255), fontsize=25)
+            img1.drawText(str(y), 10, 100, color=(255,255,255), fontsize=25)
+            img1.drawText(str(z), 10, 230, color=(255,255,255), fontsize=15)
+            img1.save(js.framebuffer)
          
-            wsh.write_message(wsh2, "c")
-        
         else:
-            wsh.write_message(wsh2, "c_" + "null" )
+            pass
+
+        
+if __name__ == '__main__'  :
+    js = SimpleCV.JpegStreamer('0.0.0.0:8080')                        ## opens socket for jpeg out
+
+    foo = pinoir2(js)
+
+else:
+   pass

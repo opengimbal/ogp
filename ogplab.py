@@ -1,15 +1,11 @@
 #!/usr/bin/env python2
 # ogp5.py
-import tornado.httpserver
-import tornado.websocket
-import tornado.ioloop
-import tornado.web
+
 import time
 import serial
 import os
 import ircam
 import picamera
-from fractions import Fraction
 
 from SimpleCV import Camera, Image
 
@@ -42,11 +38,7 @@ class so(object):
         self.countdownA = int(self.l)
         self.countdownB = int(self.l)
         self.countdownC = -1
-        i = 0
-        brightpixels=0
-        darkpixels =0
-        blobs = 0
-        
+
     def histo(self):
         cam_mode = self.cam_mode
         js = self.js
@@ -57,115 +49,74 @@ class so(object):
         c2 = self.c2
         wsh = self.wsh 
         wsh2 = self.wsh2
-        i=0
-        brightpixels=0
-        darkpixels=0
-        blobs = 0
+        s.write('s')
         
         if cam_mode == 3:
             img1 = c2.getImage()
-            time.sleep(.25)
-            
         if cam_mode==1:
             with picamera.PiCamera() as camera:
                 camera.resolution = (544, 288)
                 camera.capture('imagesmall.jpg')
             img1 = Image('imagesmall.jpg')
-            
         if cam_mode==2:
             with picamera.PiCamera() as camera:
                 camera.resolution = (544, 288)
                 camera.capture('imagesmall.jpg')
             img1 = Image('imagesmall.jpg')
-        if cam_mode == 4:
-            with picamera.PiCamera() as camera:
-                camera.resolution = (544, 288)
-                camera.framerate = Fraction(1, 6)
-                camera.shutterspeed = 6000000
-                camera.exposure_mode = 'verylong'
-                camera.iso = 800
-                sleep(10)
-                camera.capture('/var/www/imagesmall.jpg')
-            img1 = Image('/var/www/imagesmall.jpg')
-        blobs = img1.findBlobs()
+        self.img1 = img1
+        blobs = img1.findBlobs()  
+        
         if blobs:
-            crop1 = blobs[-1].x
-            crop2 = blobs[-1].y
-            crop3 = crop1 - 10
-            crop4 = crop2 - 10
-            thumbnail = img1.crop(crop3,crop4,20,20)
-            img2 = thumbnail
-            hist = img2.histogram(20)
-            while i < 20:
-                if (i < 10):
-                    darkpixels = darkpixels + hist[i]
-                    self.darkpixels = darkpixels
-                    print hist[i]   
-                else:
-                    brightpixels = brightpixels + hist[i]
-                    self.brightpixels = brightpixels
-                    print hist[i]
-                i = i + 1
-            if (brightpixels > darkpixels):
-                print darkpixels,'_', brightpixels
-                wsh.write_message(wsh2, "histo_" + str(darkpixels) + "_" + str(brightpixels))
+            print "blob"
+            x = self.x
+            y = self.y
+            p = self.p
+            p = p + 1
+            img1.drawCircle((blobs[-1].x,blobs[-1].y),30,color=(255,255,255))
+            img1.drawCircle((blobs[0].centroid()),10,color=(255,100,100))
+            print blobs[-1].meanColor()
+            rgb1 = blobs[-1].meanColor()
+            cent = blobs[-1].centroid()
 
-                print "blob"
-                x = self.x
-                y = self.y
-                p = self.p
-                p = p + 1
-                thumb1 = "/var/www/images/thumbs/thumb"
-                thumb3 = ".png"
-                thumbpath = thumb1 + str(p) + thumb3
-                print thumbpath
-                thumbnail.save(thumbpath)
-                
-                img1.drawCircle((blobs[-1].x,blobs[-1].y),30,color=(255,255,255))
-                img1.drawCircle((blobs[0].centroid()),10,color=(255,100,100))
-                print blobs[-1].meanColor()
-                rgb1 = blobs[-1].meanColor()
-                cent = blobs[-1].centroid()
-
-                pth1 = "/var/www/images/image"
-                pth3 = ".png"
-                pth = pth1 + str(p) + pth3
-                print pth
-                img1.save(pth)
-                
-                
-                self.p = p
-                
-                mySet.add((p,x,y,w,cent,rgb1))
-                self.mySet = mySet
-                
-                wshx = str(self.x)
-                wshy = str(self.y)
-                centroidx = int(cent[0])
-                centroidy=int(cent[1])
-                rcolor=rgb1[0]
-                gcolor=rgb1[1]
-                bcolor=rgb1[2]
-                rcolor=int(rcolor)
-                gcolor=int(gcolor)
-                bcolor=int(bcolor)
-                wsh.write_message(wsh2, "rgb_" + str(rcolor)+"_"+str(gcolor)+"_"+str(bcolor))
-                wsh.write_message(wsh2, "x_" + str(centroidx)+"_"+str(centroidy))
-                img1.save(js.framebuffer)
-                wsh.write_message(wsh2, "d_" + wshx + "_" + wshy + "_" + str(p) )
-
-            else:
-                print "dark"
-                print darkpixels,'_', brightpixels
-                blobs = 0
-                wsh.write_message(wsh2, "histo_" + str(darkpixels) + "_" + str(brightpixels))
+            pth1 = "/var/www/images/image"
+            pth3 = ".png"
+            pth = pth1 + str(p) + pth3
+            print pth
+            img1.save(pth)
             
+            thumbnail = img1.crop(150,25,250,250)
+            thumbnail = thumbnail.scale(20,20)
+            thumb1 = "/var/www/images/thumbs/thumb"
+            thumb3 = ".png"
+            thumbpath = thumb1 + str(p) + thumb3
+            print thumbpath
+            thumbnail.save(thumbpath)
+            
+            self.p = p
+            
+            mySet.add((p,x,y,w,cent,rgb1))
+            self.mySet = mySet
+            
+            wshx = str(self.x)
+            wshy = str(self.y)
+            centroidx = int(cent[0])
+            centroidy=int(cent[1])
+            rcolor=rgb1[0]
+            gcolor=rgb1[1]
+            bcolor=rgb1[2]
+            rcolor=int(rcolor)
+            gcolor=int(gcolor)
+            bcolor=int(bcolor)
+            wsh.write_message(wsh2, "rgb_" + str(rcolor)+"_"+str(gcolor)+"_"+str(bcolor))
+            wsh.write_message(wsh2, "x_" + str(centroidx)+"_"+str(centroidy))
+            img1.save(js.framebuffer)
+            wsh.write_message(wsh2, "d_" + wshx + "_" + wshy + "_" + str(p) )
+
         else:
             wshx = str(self.x)
             wshy = str(self.y)
             wsh.write_message(wsh2, wshx + " " + wshy + "dark")
-            img1.save(js.framebuffer)
-
+ 
             print "dark"
 
 
@@ -182,7 +133,6 @@ class so(object):
         ms = self.ms
         x = self.x
         y = self.y
-        wsh2 = self.wsh2
         if countdownA > 0:
                 
 
@@ -190,8 +140,10 @@ class so(object):
                 countdownB = int(self.l)
                 countdownC = -1
                 print "down"
-                s.write('l')
-                time.sleep(1)
+                d = 'd'
+                s.write('9')
+                mov = acx(s, d, ms, acu, acd, acl, acr)
+                mov.run()
                 y = y - 1
                 self.y = y
                 elf = self.histo()
@@ -204,11 +156,16 @@ class so(object):
             if countdownC > 1:
                 print "left"
                 countdownC -= 1
-                s.write('k')
-                time.sleep(1)
+                d = 'l'
+                s.write('2')
+                mov = acx(s, d, ms, acu, acd, acl, acr)
+                mov.run()
                 x = x - 1
                 self.x = x
+              ##  time.sleep(1)
                 elf = self.histo()
+                s.write('s')
+         ##       time.sleep(1)
                 wsh.write_message(wsh2, "m" )
                         
                 self.countdownA = countdownA
@@ -219,11 +176,15 @@ class so(object):
                 countdownC = int(self.l)
                 countdownB = -1
                 print "down"
-                s.write('l')
+                d = 'd'
+                s.write('9')
+                mov = acx(s, d, ms, acu, acd, acl, acr)
+                mov.run()
                 y = y - 1
                 self.y = y
                 time.sleep(1)
                 elf = self.histo()
+        ##        time.sleep(1)
                 countdownA -=1
                 wsh.write_message(wsh2, "m" )
                 self.countdownA = countdownA
@@ -236,17 +197,22 @@ class so(object):
             if countdownB > 1:
                 print "right"
                 countdownB-=1
-                s.write('p')
+                d = 'r'
+                s.write('4')
+                mov = acx(s, d, ms, acu, acd, acl, acr)
+                mov.run()
+                s.write('s')
+                s.write('j')
                 x = x + 1
                 self.x = x
-                time.sleep(1)
+          ##      time.sleep(1)
                 elf = self.histo()
+            ##    time.sleep(1)
                 wsh.write_message(wsh2, "m" )
                 
                 self.countdownA = countdownA
                 self.countdownB = countdownB
                 self.countdownC = countdownC
-
 
 
 
@@ -442,8 +408,8 @@ class hud2(object):
         img1.save(js.framebuffer)
 
 class acx(object):
-    def __init__(self, s, d, ms, acu, acd, acl, acr,wsh2):
-        self.wsh2=wsh2
+    def __init__(self, s, d, ms, acu, acd, acl, acr):
+
         self.s = s
         self.d = d
         self.ms = ms
@@ -453,8 +419,6 @@ class acx(object):
         self.acr = acr   
     
     def run(self):
-        wsh = tornado.websocket.WebSocketHandler        ## wsh holds some socket info
-        wsh2= self.wsh2
         s = self.s
         d = self.d
         ms = self.ms
@@ -483,21 +447,21 @@ class acx(object):
             self.countdown = acr1
 
         acms = self.countdown
+        
         while i < acms:
             i = i + 1
             time.sleep(.001)
 
         if d == 'u':
             s.write('8')
-   
         if d == 'd':
             s.write('8')
             
         if d == 'l':
             s.write('3')
-            
         if d == 'r':
             s.write('3')
+
 
 
 
@@ -507,5 +471,4 @@ if __name__ == '__main__'  :
     foo.run()
 else:
    pass
-
 

@@ -44,6 +44,15 @@ input.stepsize {
 	font-weight: bold;
 	color: #ffffff;
 }
+
+input.up3 {	
+	height: 5em;
+	width: 86px;
+	background-color: transparent;
+	font-size: 80%;
+	font-weight: bold;
+	color: #ffffff;
+}
 input.up2 {	
 	height: 5em;
 	width: 177px;
@@ -87,6 +96,7 @@ div.centre
 	min-width: 850px;
 	min-height: 600px;
 }
+
 input.padbutton
 { 
 width:80px;
@@ -100,6 +110,8 @@ width:100px;
  height:100px;
  background-color: red;
 }
+
+
 input.padbutton3
 { 
 width:80px;
@@ -118,12 +130,14 @@ div.log
 box-shadow: 0px 0px 0px 0px
 height:120px;
 }
+
 input.padbutton4
 { 
 width:100px;
  color:white;
  height:30px;
 }
+
 div.bottom{
 	max-height: 250px;
 	columns: 200px 3 ;
@@ -131,9 +145,11 @@ div.bottom{
 	z-index:0;
 }
 body {	
+	
 	text-align: center;
 	background-color: #000000;
      }
+
 </style>
 
 <script src="http://192.168.42.1/jquery-1.11.0.min.js"></script>
@@ -400,7 +416,7 @@ body {
 	$("#autocal").click(function(){
 	    chasing = "n";
 	    mapping = "n";
-	    ws.send('k');
+	    ws.send('mx');
 	});
 
 	$("#allstop").click(function(){
@@ -414,13 +430,11 @@ body {
 
 	    ws.send('8');
 	});
-	$("#cam2").click(function(){
 
-	    ws.send('c2');
-	});
+
 	$("#cam1").click(function(){
 
-	    ws.send('c1');
+	    ws.send('c3');
 	});
 	$("#cam4").click(function(){
 
@@ -428,14 +442,14 @@ body {
 	});
 	$("#cam3").click(function(){
 
-	    ws.send('c3');
+	    ws.send('c2');
 	});
 	$("#mapsizea").click(function(){
 	    ws.send('p');
 	
 	});
 	$("#cam2").click(function(){
-	    ws.send('c2');
+	    ws.send('c1');
 	
 	});
 	$("#mapsizeb").click(function(){
@@ -489,9 +503,11 @@ body {
  <div class="centre" id="main">
   <div id="top">
  <input type="image" class="pic1" id="pic2" value="PIC-" />
-  <input type="image" class="up2" id="cam2" value="CAM2" />
+  <input type="image" class="up3" id="cam1" value="CAM1" />
+  <input type="image" class="up3" id="cam2" value="CAM2" />
   <input type="image" id="up" value="UP" /<br>
-  <input type="image" class="up2" id="cam3" value="CAM3" />
+  <input type="image" class="up3" id="cam3" value="CAM3" />
+  <input type="image" class="up3" id="cam4" value="CAM4" />
   <input type="image" class="pic1" id="pic1" value="PIC+" />
   </div>
 
@@ -503,9 +519,11 @@ body {
 
   <div>
   <input type="image" class="stop1" id="allstop" value="STOP X" />
-  <input type="image" class="up2" id="sminus" value="STEPSIZE-" />
+  <input type="image" class="up3" id="sminus" value="STEPSIZE-" />
+  <input type="image" class="up3" id="splus" value="STEPSIZE+" />
   <input type="image" id="down" value="DOWN" />
-  <input type="image" class="up2" id="splus" value="STEPSIZE+" />
+  <input type="image" class="up3" id="new" value="STEPSIZE+" />
+  <input type="image" class="up3" id="new" value="STEPSIZE-" />
   <input type="image" class="stop1" id="allstop2" value="STOP Y" />
   </div>
 
@@ -516,7 +534,7 @@ body {
    <input class= "padbutton" type="image" id="long" value="MAP STEP" />
    <input class= "padbutton" type="image" id="open" value="OPEN GEAR" />
    <input class= "padbutton" type="image" id="map" value="NEW MAP" />
-   <input class= "padbutton" type="image" id="map2" value="MAP ON/OFF" />
+   <input class= "padbutton" type="image" id="map2" value="MAP ON" />
    <input class= "padbutton" type="image" id="chase" value="CHASE" /><br><br><br></div><div>
  <div id="log" style="overflow:hidden; width:100%; height:125px; color:white; background-color:#000000; margin: 1px; text-align:left">OGP -stand by</div>
  <input type="text" id="msg" style=" color:white; background-color:#000000; height: 10px; width:60% " />
@@ -525,8 +543,8 @@ body {
  <input class= "padbutton4" type="image" id="picf"  value="PIC FOLDER" /><br>
     <input class= "padbutton" type="image" id="in"  value="IN" />
    <input class= "padbutton" type="image" id="out" value="OUT" />
-  <input class= "padbutton" type="image" id="cam1" value="CAM 1" />
-  <input class= "padbutton" type="image" id="autocal" value="AUTOCAL" />
+  <input class= "padbutton" type="image" id="cam5" value="CAM 5" />
+  <input class= "padbutton" type="image" id="autocal" value="POSITION" />
 
    <input class= "padbutton" type="image" id="mapsizea" value="MAPSIZE+" />
    <input class= "padbutton" type="image" id="mapsizeb" value="MAPSIZE-" />

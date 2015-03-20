@@ -1,4 +1,3 @@
-
 ##!/usr/bin/env python2         
 ## newsocket.py
 
@@ -8,6 +7,7 @@
 
 ## LIBRARIES 
 
+import focus
 import tornado.httpserver
 import tornado.websocket
 import tornado.ioloop
@@ -21,6 +21,7 @@ import os
 from ogplab import *
 import ircam
 from chase2 import *
+import ephem
 
 ## some important variables
 
@@ -41,15 +42,16 @@ acl = int(1)
 acr = int(1)
 
 showimage = int(1)
-mapsize = int(8)
-stepsize = int(500)
-
+mapsize = int(10)
+stepsize = int(100)
+nudgesize =int(50)
 stat = "ogp"
-s.write('3')
-s.write('8')
-
 sqx = int(272)
 sqy = int(144)
+moon = ephem.Moon()
+orlando = ephem.Observer()
+orlando.lat = '28.41'
+orlando.lon =  '-81.29'
 
 class WSHandler(tornado.websocket.WebSocketHandler):      
 
@@ -68,11 +70,25 @@ class WSHandler(tornado.websocket.WebSocketHandler):
         self.cam_mode = cam_mode
         self.sqx = sqx
         self.sqy = sqy
+        s.write('n')
+        time.sleep(2)
+        self.write_message(s.readline())
+
+        
         
 
     def on_message(self, message):
 
         print 'Incoming message:', message      ## output message to python
+        if message.isdigit():
+            digits = int(message)
+            print 'digits_'+ str(digits)
+            if digits>9:
+                s.write('x'+ str(digits))
+
+        msgsplit = message.split("_")
+        print msgsplit[0]
+        
         showimage = self.showimage
         mapsize = self.mapsize
         stepsize = self.stepsize
@@ -82,23 +98,67 @@ class WSHandler(tornado.websocket.WebSocketHandler):
         stat = "ogp"
         sqx = self.sqx
         sqy=self.sqy
-        
         cam_mode = self.cam_mode
+        wsh2=self
 
-        
+        if msgsplit[0] == 'moon':
+            print "moon"
+            
+            client_utc = str(msgsplit[1] + "  " + msgsplit[2])
+            d = ephem.Date(client_utc)
+            orlando.date = d
+            print d
+            
+            moon.compute(orlando)
+            moonaz = str(moon.az)
+            moonalt = str(moon.alt)
+            ticks = str(time.time())
+            self.write_message("moon_" + moonalt + "_" + moonaz )
+            self.write_message("time_" + client_utc)
+
+            moonaz2 = moonaz.split(":")
+            moonalt2 = moonalt.split(":")
+            print moonaz2[0]
+            print moonalt2[0]
+
+            moonalt3 = moonalt2[0]
+            if moonalt3 >= 12:
+                moonalt4 = "x"+ str(moonalt3)
+                s.write(moonalt4)
+                
+
+##            moonaz3 = moonaz2[0]
+##            if moonaz3 >= 3:
+##                moonaz4 = int(moonaz3) + 100
+##                s.write(moonaz4)
+
+
+
+
+            
+        if message == 'focus':
+            focusobj = focus.focus1()
+            focus2 = focusobj.fuFind()
+            
+
+            
         if message =='j':            ##    switches for incoming socket events
             print "j"
             x = x + 1
             self.x = x
             self.write_message("echo: " + message + " right " )    
-            d = 'r'
-            ms = 50
-            s.write('4')
-            mov = acx(s, d, ms, acu, acd, acl, acr)
-            mov.run()
-            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy)
+            s.write('s')
+            time.sleep(.5)
+            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy,s,wsh2)
             irpic.run()
 
+        if message =='c4':
+            cam_mode = 4
+            self.cam_mode = cam_mode
+            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy,s,wsh2)
+            irpic.run()
+            self.write_message("echo: " + message + "long exposure mode " + str(cam_mode) )
+            
         if message =='c3':
             cam_mode = 3
             self.cam_mode = cam_mode
@@ -110,44 +170,40 @@ class WSHandler(tornado.websocket.WebSocketHandler):
                 rgb1 = blobs[-1].meanColor()
                 cent = blobs[-1].centroid()
 
-            img1.drawText(str(stat), 10, 10, fontsize=50)
-            img1.drawText(str(x), 10, 70, color=(255,255,255), fontsize=25)
-            img1.drawText(str(y), 10, 100, color=(255,255,255), fontsize=25)
-            img1.drawRectangle(sqx,sqy,25, 25,color=(255,255,255))
+                img1.drawText(str(stat), 10, 10, fontsize=50)
+                img1.drawText(str(x), 10, 70, color=(255,255,255), fontsize=25)
+                img1.drawText(str(y), 10, 100, color=(255,255,255), fontsize=25)
+                img1.drawRectangle(sqx,sqy,25, 25,color=(255,255,255))
 
-            img1.drawText(str(z), 10, 230, color=(255,255,255), fontsize=15)
-            img1.drawText(str(cent), 10, 250, color=(255,255,255), fontsize=15)
-            img1.drawText(str(rgb1), 10, 270, color=(255,255,255), fontsize=15)
+                img1.drawText(str(z), 10, 230, color=(255,255,255), fontsize=15)https://github.com/opengimbal/ogp/graphs
+                img1.drawText(str(cent), 10, 250, color=(255,255,255), fontsize=15)
+                img1.drawText(str(rgb1), 10, 270, color=(255,255,255), fontsize=15)
             img1.save(js.framebuffer)
             self.write_message("echo: " + message + " " + str(cam_mode) )    
 
         if message =='c2':
             cam_mode = 2
             self.cam_mode = cam_mode
-            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy)
+            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy,s,wsh2)
             irpic.run()
             self.write_message("echo: " + message + " " + str(cam_mode) )    
 
         if message =='c1':
             cam_mode = 1
             self.cam_mode = cam_mode
-            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy)
+            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy,s,wsh2)
             irpic.run()
             self.write_message("echo: " + message + " " + str(cam_mode) )    
 
         if message =='h':
             print "h"
-            s.write('h')
             x = x - 1
             self.x = x
             self.write_message("echo: " + message + " left" )
-            d = 'l'
-            ms = 50
-            s.write('2')
-            mov = acx(s, d, ms, acu, acd, acl, acr)
-            mov.run()
-            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy)
+            s.write('q')
+            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy,s,wsh2)
             irpic.run()
+            
         if message == 'squ':
             print "squ"
             sqy = self.sqy
@@ -176,13 +232,19 @@ class WSHandler(tornado.websocket.WebSocketHandler):
         if message =='+':
             print "+"
             stepsize = self.stepsize
-            stepsize = stepsize + 25
+            if stepsize < 1975:
+                stepsize = stepsize + 25
+                stepsizeb = stepsize +1000
+            s.write('x'+ str(stepsizeb))
             self.write_message("echo: " + str(stepsize) + " stepsize plus" )
             self.stepsize = stepsize
         if message =='-':
             print "-"
             stepsize = self.stepsize
-            stepsize = stepsize - 25
+            if stepsize > 0. :
+                stepsize = stepsize -25
+                stepsizeb = stepsize +1000
+            s.write('x'+str(stepsizeb))
             self.write_message("echo: " + str(stepsize) + " stepsize minus" )
             self.stepsize = stepsize
 
@@ -224,12 +286,9 @@ class WSHandler(tornado.websocket.WebSocketHandler):
             y = y + 1
             self.y = y
             self.write_message("echo: " + message + " up   ")
-            d = 'u'
-            ms = 50
-            s.write('6')
-            mov = acx(s, d, ms, acu, acd, acl, acr)
-            mov.run()
-            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy)
+            s.write('w')
+            time.sleep(.5)
+            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy,s,wsh2)
             irpic.run()
 
         if message =='g':
@@ -237,12 +296,9 @@ class WSHandler(tornado.websocket.WebSocketHandler):
             y = y - 1
             self.y = y
             self.write_message("echo: " + message + " down   ")
-            d = 'd'
-            ms = 50
-            s.write('9')
-            mov = acx(s, d, ms, acu, acd, acl, acr)
-            mov.run()
-            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy)
+            s.write('a')
+            time.sleep(.5)
+            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy,s,wsh2)
             irpic.run()
 
         if message =='z':
@@ -251,12 +307,9 @@ class WSHandler(tornado.websocket.WebSocketHandler):
             y = y - 1
             self.y = y
             self.write_message("echo: " + message + " map down   ")
-            d = 'd'
-            ms = stepsize
-            s.write('9')
-            mov = acx(s, d, ms, acu, acd, acl, acr)
-            mov.run()
-            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy)
+            s.write('l')
+            time.sleep(1)
+            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy,s,wsh2)
             irpic.run()
 
         if message =='a':
@@ -267,10 +320,9 @@ class WSHandler(tornado.websocket.WebSocketHandler):
             self.write_message("echo: " + message + " map left   ")
             d = 'l'
             ms = stepsize
-            s.write('2')
-            mov = acx(s, d, ms, acu, acd, acl, acr)
-            mov.run()
-            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy)
+            s.write('k')
+            time.sleep(1)
+            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy,s,wsh2)
             irpic.run()
 
         if message =='w':
@@ -281,10 +333,9 @@ class WSHandler(tornado.websocket.WebSocketHandler):
             self.write_message("echo: " + message + " map up   ")
             d = 'u'
             ms = stepsize
-            s.write('6')
-            mov = acx(s, d, ms, acu, acd, acl, acr)
-            mov.run()
-            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy)
+            s.write('o')
+            time.sleep(1)
+            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy,s,wsh2)
             irpic.run()
 
         if message =='s':
@@ -295,14 +346,16 @@ class WSHandler(tornado.websocket.WebSocketHandler):
             self.write_message("echo: " + message + " map right   ")
             d = 'r'
             ms = stepsize
-            s.write('4')
-            mov = acx(s, d, ms, acu, acd, acl, acr)
-            mov.run()
-            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy)
+            s.write('p')
+            time.sleep(1)
+            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy,s,wsh2)
             irpic.run()
 
         if message =='b':           ## MAPPER 
             print "b"
+            s.write('n')
+            time.sleep(1)
+            self.write_message(s.readline())
             self.write_message("echo: " + message + " map" )        
             m = stepsize
             wsh = tornado.websocket.WebSocketHandler        ## wsh holds some socket info
@@ -328,11 +381,6 @@ class WSHandler(tornado.websocket.WebSocketHandler):
             cchase = chase3(js, wsh, wsh2, c2, sqx, sqy, cam_mode)
             cchase.run()
 
-        if message == 'k':
-            wsh = tornado.websocket.WebSocketHandler        ## wsh holds some socket info
-            wsh2 = self                                    ## wsh2 holds the name of the instance  
-       ##     ac = autocal(c, js, wsh, wsh2)
-      ##      ac.run()
         if message == 'x':
             showimage = showimage - 1
             self.showimage = showimage
@@ -383,7 +431,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):
             print "3"
             s.write('3')
             self.write_message("echo: " + message + "3")
-            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy)
+            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy,s,wsh2)
             irpic.run()
 
 
@@ -398,12 +446,17 @@ class WSHandler(tornado.websocket.WebSocketHandler):
             s.write('6')
             self.write_message("echo: " + message + " 7")
 
+        if message =='mx':
+            print "sensor"
+            s.write('n')
+            time.sleep(1)
+            self.write_message(s.readline())
 
         if message =='8':
             print "8"
             s.write('8')
             self.write_message("echo: " + message + " 8")
-            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy)
+            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy,s,wsh2)
             irpic.run()
 
 
@@ -411,7 +464,6 @@ class WSHandler(tornado.websocket.WebSocketHandler):
             print "9"
             s.write('9')
             self.write_message("echo: " + message + " 9")
-
 
 
     def on_close(self):                       ##  if you lose the socket
@@ -426,3 +478,4 @@ if __name__ == "__main__":                       ##    since this is the main mo
     http_server = tornado.httpserver.HTTPServer(application)      ## opens the socket
     http_server.listen(8888)                                     ## on this port
     tornado.ioloop.IOLoop.instance().start()        ##   this starts the threaded socket loop
+        

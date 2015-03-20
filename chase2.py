@@ -7,7 +7,7 @@ import os
 import ircam
 import picamera
 from SimpleCV import Camera, Image
-from ogplab import *
+import ogplab2
 
 l = int(4)
 s = serial.Serial('/dev/ttyUSB0', 9600)

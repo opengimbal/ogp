@@ -1,0 +1,209 @@
+<!DOCTYPE CSS>
+
+<style type="text/css">
+#dummy {	
+	height: 5em;
+	width: 181px;
+	background-color: transparent;
+	font-size: 80%;
+	font-weight: bold;
+	color: #ffffff;
+}
+
+input.stepsize {	
+	height: 5em;
+	width: 100px;
+	background-color: transparent;
+	font-size: 80%;
+	font-weight: bold;
+	color: #ffffff;
+}
+input.up2 {	
+	height: 5em;
+	width: 78px;
+	background-color: #F88E26;
+	font-size: 80%;
+	font-weight: bold;
+	color: #000000;
+}
+input.up3 {	
+	height: 5em;
+	width: 78px;
+	background-image: url("/images/wood.jpg");
+	background-color: #F88E26;
+	font-size: 80%;
+	font-weight: bold;
+	color: #000000;
+}
+input.up4 {	
+	height: 5em;
+	width: 78px;
+	background-color: #587D9D;
+	font-size: 80%;
+	font-weight: bold;
+	color: #000000;
+}
+
+input.up5 {	
+	height: 5em;
+	width: 78px;
+	background-color: #F5C168;
+	font-size: 80%;
+	font-weight: bold;
+	color: #000000;
+}
+input.up2 {	
+	height: 5em;
+	width: 78px;
+	background-color: #F88E26;
+	font-size: 80%;
+	font-weight: bold;
+	color: #000000;
+}
+input.pic1 {	
+	height: 5em;
+	width: 145px;
+	background-color: transparent;
+	font-size: 80%;
+	font-weight: bold;
+	color: #ffffff;
+}
+input.stop1 {	
+	height: 5em;
+	width: 145px;
+	background-color: transparent;
+	font-size: 80%;
+	font-weight: bold;
+	color: #ffffff;
+}
+input.stop2 {	
+	height: 5em;
+	width: 145px;
+	background-color: red;
+	font-size: 80%;
+	font-weight: bold;
+	color: #ffffff;
+}
+input.left {	
+	height: 100%;
+	width: 100px;
+	background-image: url("/images/left.jpg");
+	background-repeat: no-repeat;
+	font-size: 80%;
+	font-weight: bold;
+	color: #ffffff;
+}
+
+input.right {	
+	height: 100%;
+	width: 100px;
+	background-image: url("/images/right.jpg");
+	background-repeat: no-repeat;
+	font-size: 80%;
+	font-weight: bold;
+	color: #ffffff;
+}
+input.up9 {	
+	height: 80px;
+	width: 544px;
+	background-image: url("/images/up.jpg");
+	background-repeat: no-repeat;
+	font-size: 80%;
+	font-weight: bold;
+	color: #ffffff;
+}
+input.down {	
+	height: 80px;
+	width: 544px;
+	background-image: url("/images/down.jpg");
+	background-repeat: no-repeat;
+	font-size: 80%;
+	font-weight: bold;
+	color: #ffffff;
+}
+
+
+div.centre
+{ 
+	background-image:url('wood.jpg');
+	background-color: #000000;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	max-height: 3000px; 
+	max-width: 850px;
+	min-width: 850px;
+	min-height: 600px;
+}
+input.padbutton
+{ 
+width:80px;
+ color:white;
+ height:150px;
+}
+input.padbutton2
+{ 
+width:100px;
+ color:black;
+ height:100px;
+ background-color: red;
+}
+input.padbutton3
+{ 
+width:80px;
+ color:white;
+ height:30px;
+}
+input.padbutton6
+{ 
+width:80px;
+ color:white;
+ height:100px;
+ background-color: yellow;
+}
+div.log
+{
+box-shadow: 0px 0px 0px 0px
+height:120px;
+}
+input.padbutton4
+{ 
+width:100px;
+ color:white;
+ height:30px;
+}
+div.bottom{
+	max-height: 140px;
+	columns: 140px 3 ;
+	-webkit-columns: 140px 3;
+	z-index: 1;
+}
+img{
+padding:1px;
+   border:1px solid #021a40;
+   background-color:#ff0;
+
+}
+img.bg{
+	min-height: 100%;
+	min-width: 100%;
+	width: 100%;
+	height: auto;
+	position: fixed;
+	top: 0;
+	left: 0;
+	background-image: url("images/bkgd.jpg");
+
+}
+body {	
+	
+	text-align: center;
+	
+	
+	background-color: #000000;
+    background-image: url("images/bkgd.jpg");
+
+
+
+     }
+</style>

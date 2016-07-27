@@ -1,6 +1,7 @@
 // OGP -- ARDUINO SIDE V3.0
 
 // for use with any serial device over usb
+// arduino duemillanove + adafruit motor shield + directional sensor
 // this config handles:  2 SERVOS, 1 DC MOTOR and now featuring one LSM303dlhc compass/accelerometer.
 
 // watch out!! if you lose contact with the rpi in mid-movement, 

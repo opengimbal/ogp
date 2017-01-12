@@ -1,11 +1,15 @@
 #!/usr/bin/env python2
-# ogp5.py
-
+# ogplab2.py
+import tornado.httpserver
+import tornado.websocket
+import tornado.ioloop
+import tornado.web
 import time
 import serial
 import os
 import ircam
 import picamera
+from fractions import Fraction
 
 from SimpleCV import Camera, Image
 
@@ -17,458 +21,256 @@ l = int(4)
 s = serial.Serial('/dev/ttyUSB0', 9600)
 
 class so(object):
-
-    def __init__(self, side, m, js, wsh, wsh2, c2, cam_mode):
+    def __init__(self, side, js, wsh, wsh2, c2, cam_mode, c):
         self.cam_mode=cam_mode
         self.c2=c2
-        self.ms = m
         self.js = js
         self.wsh = wsh
         self.wsh2 = wsh2
-        self.m = m
         self.l = side
-        self.x = 0
-        self.y = 0
+        self.x = 12
+        self.y = -12
         self.w = 0
-        self.p = 1        
+        self.p = 1
         c2=self.c2
         l = self.l
         x = -1
         y = -1
         self.countdownA = int(self.l)
-        self.countdownB = int(self.l)
-        self.countdownC = -1
+        self.countdownB = 1
+        self.countdownC = 0
+        self.left = 0
+        self.right = 1
+        self.up = 0
+        self.down=0
+        i = 0
+        brightpixels=0
+        darkpixels =0
+        blobs = 0
 
-    def histo(self):
-        cam_mode = self.cam_mode
+    def histo(self): ## this def is the "light meter" part---
+        cam_mode = self.cam_mode ## the pic gets cataloged if true ---
         js = self.js
-        ms = self.ms
         w = self.w
         cent = 0
         rgb1 = 0
         c2 = self.c2
-        wsh = self.wsh 
+        wsh = self.wsh
         wsh2 = self.wsh2
-        s.write('s')
-        
-        if cam_mode == 3:
+        i=0
+        brightpixels=0
+        darkpixels=0
+        blobs = 0
+
+        if cam_mode == 3: ## sort out the confusing cam modes
             img1 = c2.getImage()
+            time.sleep(.25)
+
         if cam_mode==1:
             with picamera.PiCamera() as camera:
                 camera.resolution = (544, 288)
                 camera.capture('imagesmall.jpg')
             img1 = Image('imagesmall.jpg')
+
         if cam_mode==2:
             with picamera.PiCamera() as camera:
                 camera.resolution = (544, 288)
                 camera.capture('imagesmall.jpg')
             img1 = Image('imagesmall.jpg')
-        self.img1 = img1
-        blobs = img1.findBlobs()  
-        
-        if blobs:
-            print "blob"
-            x = self.x
-            y = self.y
-            p = self.p
-            p = p + 1
-            img1.drawCircle((blobs[-1].x,blobs[-1].y),30,color=(255,255,255))
-            img1.drawCircle((blobs[0].centroid()),10,color=(255,100,100))
-            print blobs[-1].meanColor()
-            rgb1 = blobs[-1].meanColor()
-            cent = blobs[-1].centroid()
 
-            pth1 = "/var/www/images/image"
-            pth3 = ".png"
-            pth = pth1 + str(p) + pth3
-            print pth
-            img1.save(pth)
-            
-            thumbnail = img1.crop(150,25,250,250)
-            thumbnail = thumbnail.scale(20,20)
-            thumb1 = "/var/www/images/thumbs/thumb"
-            thumb3 = ".png"
-            thumbpath = thumb1 + str(p) + thumb3
-            print thumbpath
-            thumbnail.save(thumbpath)
-            
-            self.p = p
-            
-            mySet.add((p,x,y,w,cent,rgb1))
-            self.mySet = mySet
-            
-            wshx = str(self.x)
-            wshy = str(self.y)
-            centroidx = int(cent[0])
-            centroidy=int(cent[1])
-            rcolor=rgb1[0]
-            gcolor=rgb1[1]
-            bcolor=rgb1[2]
-            rcolor=int(rcolor)
-            gcolor=int(gcolor)
-            bcolor=int(bcolor)
-            wsh.write_message(wsh2, "rgb_" + str(rcolor)+"_"+str(gcolor)+"_"+str(bcolor))
-            wsh.write_message(wsh2, "x_" + str(centroidx)+"_"+str(centroidy))
-            img1.save(js.framebuffer)
-            wsh.write_message(wsh2, "d_" + wshx + "_" + wshy + "_" + str(p) )
+        blobs = img1.findBlobs()
+        time.sleep(0.5)
+
+        if blobs:
+##find the blob centroid and cut it out 20x20
+            crop1 = blobs[-1].x      
+            crop2 = blobs[-1].y
+            crop3 = crop1 - 10
+            crop4 = crop2 - 10
+            thumbnail = img1.crop(crop3,crop4,20,20)
+            img2 = thumbnail
+            hist = img2.histogram(20)
+            ## split the thumb into 20 levels of darkness
+            brightpixels = hist[10]
+            ## 10 is where the darkest of the light pixels accumulate
+            print brightpixels
+
+##while i < 20:
+##old code for if you want to split the histogram in two
+##if (i < 10):
+##darkpixels = darkpixels + hist[i]
+##self.darkpixels = darkpixels
+##print hist[i]
+##else:
+##brightpixels = brightpixels + hist[i]
+##self.brightpixels = brightpixels
+##print hist[i]
+##i = i + 1
+
+            if (brightpixels<400):   ## heres where it decides to catalog the pic or not...
+                wsh.write_message(wsh2, "histo_" + str(darkpixels) + "_" + str(brightpixels))
+                print "blob"
+                x = self.x
+                y = self.y
+                p = self.p
+                p = p + 1
+                thumb1 = "/var/www/html/images/thumbs/thumb"
+                thumb3 = ".png"
+                thumbpath = thumb1 + str(p) + thumb3
+                print thumbpath
+                thumbnail.save(thumbpath)
+                img1.drawText("blob = True", 10, 35, color=(255,255,255),fontsize=30)
+                img1.drawText("search_mode", 10, 5, color=(0,0,255),fontsize=40)
+                img1.drawText("blob centroid", blobs[-1].x,blobs[-1].y, color=(255,255,255),fontsize=20)
+                img1.drawCircle((blobs[-1].x,blobs[-1].y),30,color=(255,255,0))
+                img1.drawCircle((blobs[0].centroid()),10,color=(255,255,255))
+                print blobs[-1].meanColor()
+                rgb1 = blobs[-1].meanColor()
+                cent = blobs[-1].centroid()
+
+                pth1 = "/var/www/html/images/image"
+                pth3 = ".png"
+                pth = pth1 + str(p) + pth3
+                print pth
+                img1.save(pth)
+                time.sleep(0.5)
+
+                self.p = p
+
+                mySet.add((p,x,y,w,cent,rgb1))
+                self.mySet = mySet
+
+                wshx = str(self.x)
+                wshy = str(self.y)
+
+                centroidx = int(cent[0])
+                centroidy=int(cent[1])
+                rcolor=rgb1[0]
+                gcolor=rgb1[1]
+                bcolor=rgb1[2]
+                rcolor=int(rcolor)
+                gcolor=int(gcolor)
+                bcolor=int(bcolor)
+                wsh.write_message(wsh2, "rgb_" + str(rcolor)+"_"+str(gcolor)+"_"+str(bcolor))
+                wsh.write_message(wsh2, "x_" + str(centroidx)+"_"+str(centroidy))
+                img1.save(js.framebuffer)
+                time.sleep(0.5)
+
+                wsh.write_message(wsh2, "d_" + wshx + "_" + wshy + "_" + str(p) )
+
+            else:
+                print "senosor dark"
+                print darkpixels,'_', brightpixels
+                blobs = 0
+                wsh.write_message(wsh2, "histo_" + str(darkpixels) + "_" + str(brightpixels))
 
         else:
             wshx = str(self.x)
             wshy = str(self.y)
             wsh.write_message(wsh2, wshx + " " + wshy + "dark")
- 
-            print "dark"
+            img1.save(js.framebuffer)
+
+            print "no blob"
 
 
-    def run(self):
-        wsh = self.wsh 
+    def run(self):    ## this def is the movement iterator
+        wsh = self.wsh
         wsh2 = self.wsh2
-        acu = int(1)
-        acd = int(1)
-        acl = int(1)
-        acr = int(1)
+
         countdownA = self.countdownA
         countdownB = self.countdownB
         countdownC = self.countdownC
-        ms = self.ms
+        left = self.left
+        right = self.right
+        up = self.up
+        down = self.down
+
         x = self.x
         y = self.y
-        if countdownA > 0:
-                
+        wsh2 = self.wsh2
 
-            if countdownC == 1:
-                countdownB = int(self.l)
-                countdownC = -1
-                print "down"
-                d = 'd'
-                s.write('9')
-                mov = acx(s, d, ms, acu, acd, acl, acr)
-                mov.run()
-                y = y - 1
-                self.y = y
-                elf = self.histo()
-##                time.sleep(1)
-                countdownA -=1
-                wsh.write_message(wsh2, "m" )
-                self.countdownA = countdownA
-                self.countdownB = countdownB
-                self.countdownC = countdownC
-            if countdownC > 1:
-                print "left"
-                countdownC -= 1
-                d = 'l'
-                s.write('2')
-                mov = acx(s, d, ms, acu, acd, acl, acr)
-                mov.run()
-                x = x - 1
-                self.x = x
-              ##  time.sleep(1)
-                elf = self.histo()
-                s.write('s')
-         ##       time.sleep(1)
-                wsh.write_message(wsh2, "m" )
-                        
-                self.countdownA = countdownA
-                self.countdownB = countdownB
-                self.countdownC = countdownC
-            
-            if countdownB == 1:
-                countdownC = int(self.l)
-                countdownB = -1
-                print "down"
-                d = 'd'
-                s.write('9')
-                mov = acx(s, d, ms, acu, acd, acl, acr)
-                mov.run()
-                y = y - 1
-                self.y = y
+        if (countdownB < countdownA):
+            print "ctb",countdownB
+            print right
+            if (right > 0):
+                print "right- 0"
+                print right
+                s.write('p')
                 time.sleep(1)
-                elf = self.histo()
-        ##        time.sleep(1)
-                countdownA -=1
-                wsh.write_message(wsh2, "m" )
-                self.countdownA = countdownA
-                self.countdownB = countdownB
-                self.countdownC = countdownC
-                
-                print self.l
-                print countdownC
-                print self.countdownC
-            if countdownB > 1:
-                print "right"
-                countdownB-=1
-                d = 'r'
-                s.write('4')
-                mov = acx(s, d, ms, acu, acd, acl, acr)
-                mov.run()
-                s.write('s')
-                s.write('j')
+
                 x = x + 1
                 self.x = x
-          ##      time.sleep(1)
                 elf = self.histo()
-            ##    time.sleep(1)
                 wsh.write_message(wsh2, "m" )
-                
-                self.countdownA = countdownA
-                self.countdownB = countdownB
-                self.countdownC = countdownC
+                right = right - 1
+                self.right = right
+                if (right == 0):
+                    down = countdownB
+                    self.down = down
+            if (down>0):
+                print "ctb",countdownB
+                print "down"
+                print down
+                s.write('l')
+                time.sleep(1)
+
+                y = y - 1
+                self.y = y
+                elf = self.histo()
+                wsh.write_message(wsh2, "m" )
+                down = down - 1
+                self.down = down
+                if (down == 0):
+                    countdownB += 1
+                    self.countdownB = countdownB
+                    left = countdownB
+                    self.left = left
+                    print "ctb", countdownB
+
+            if (left>0):
+                print "left"
+                print left
+                print "ctb",countdownB
+
+                s.write('k')
+                time.sleep(1)
+
+                x = x - 1
+                self.x = x
+                elf = self.histo()
+                wsh.write_message(wsh2, "m" )
+                left = left - 1
+                self.left = left
+                if (left == 0):
+                    print "ctb",countdownB
+
+                    up = countdownB
+                    self.up = up
 
 
+            if (up>0):
+                print "up"
+                print "ctb",countdownB
+                print up
+                s.write('o')
+                time.sleep(1)
+                y = y + 1
+                self.y = y
+                elf = self.histo()
+                wsh.write_message(wsh2, "m" )
+                up = up - 1
+                self.up = up
+                if (up == 0):
+                    countdownB += 1
+                    self.countdownB = countdownB
+                    right = countdownB
+                    self.right = right
+                    print "ctb",countdownB
 
         else:
             wsh = self.wsh
             wsh2 = self.wsh2
 
-         ##   wsh.write_message(wsh2, str(mySet) )
             wsh.write_message(wsh2, "map complete" )
 
             print "done"
-
-
-
-class autocal(object):
-    def __init__(self, js, wsh, wsh2):
-        self.js = js
-        self.wsh = wsh
-        self.wsh2 = wsh2
-      ##  self.c = c
-    
-    def run(self):
-
-        wsh = self.wsh
-      ##  c = self.c
-        js = self.js
-        wsh2 = self.wsh2
-        acu = int(1)
-        acd = int(1)
-        acl = int(1)
-        acr = int(1)
-        irpic = pinoir2(js)
-
-        img1 = Image('imagesmall.jpg')   
-        blobs = img1.findBlobs()
-        img1.drawCircle((blobs[-1].x,blobs[-1].y),30,color=(255,255,255))
-        img1.drawCircle((blobs[-1].centroid()),10,color=(255,100,100))
-        acx1 = blobs[-1].x
-        acy1 = blobs[-1].y
-
-
-        img1.drawText("ogp: autocalibrating", 10, 10, fontsize=50)
-        img1.drawText(str(acx1), 10, 50, color=(255,255,255), fontsize=20)
-        img1.drawText(str(acy1), 10, 75, color=(255,255,255), fontsize=20)
-        img1.save(js.framebuffer)
-        
-        d = 'r'
-        ms = 50
-        s.write('4')
-        mov = acx(s, d, ms, acu, acd, acl, acr)
-        mov.run()
-            
-        time.sleep(1)
-
-        img1 = c.getImage()   
-        blobs = img1.findBlobs()
-        img1.drawCircle((blobs[-1].x,blobs[-1].y),30,color=(255,255,255))
-        img1.drawCircle((blobs[-1].centroid()),10,color=(255,100,100))
-        acx2 = blobs[-1].x
-        acy2 = blobs[-1].y
-
-        
-        img1.drawText("ogp: autocalibrating", 10, 10, fontsize=50)
-        img1.drawText(str(acx1), 10, 50, color=(255,255,255), fontsize=20)
-        img1.drawText(str(acy1), 10, 75, color=(255,255,255), fontsize=20)        
-        img1.drawText(str(acx2), 40, 50, color=(255,255,255), fontsize=20)
-        img1.drawText(str(acy2), 40, 75, color=(255,255,255), fontsize=20)
-        img1.save(js.framebuffer)
-        
-        d = 'd'
-        ms = 50
-        s.write('9')
-        mov = acx(s, d, ms, acu, acd, acl, acr)
-        mov.run()
-        time.sleep(1)
-
-
-        img1 = c.getImage()   
-        blobs = img1.findBlobs()
-        img1.drawCircle((blobs[-1].x,blobs[-1].y),30,color=(255,255,255))
-        img1.drawCircle((blobs[-1].centroid()),10,color=(255,100,100))
-        acx3 = blobs[-1].x
-        acy3 = blobs[-1].y
-
-        img1.drawText("ogp: autocalibrating", 10, 10, fontsize=50)
-        img1.drawText(str(acx1), 10, 50, color=(255,255,255), fontsize=20)
-        img1.drawText(str(acy1), 10, 75, color=(255,255,255), fontsize=20)        
-        img1.drawText(str(acx2), 40, 50, color=(255,255,255), fontsize=20)
-        img1.drawText(str(acy2), 40, 75, color=(255,255,255), fontsize=20)
-        img1.drawText(str(acx3), 70, 50, color=(255,255,255), fontsize=20)
-        img1.drawText(str(acy3), 70, 75, color=(255,255,255), fontsize=20)
-        img1.save(js.framebuffer)
-        d = 'l'
-        ms = 50
-        s.write('2')
-        mov = acx(s, d, ms, acu, acd, acl, acr)
-        mov.run()
-        time.sleep(1)
-
-
-        img1 = c.getImage()   
-        blobs = img1.findBlobs()
-        img1.drawCircle((blobs[-1].x,blobs[-1].y),30,color=(255,255,255))
-        img1.drawCircle((blobs[-1].centroid()),10,color=(255,100,100))
-        acx4 = blobs[-1].x
-        acy4 = blobs[-1].y
-
-        img1.drawText("ogp: autocalibrating", 10, 10, fontsize=50)
-        img1.drawText(str(acx1), 10, 50, color=(255,255,255), fontsize=20)
-        img1.drawText(str(acy1), 10, 75, color=(255,255,255), fontsize=20)        
-        img1.drawText(str(acx2), 40, 50, color=(255,255,255), fontsize=20)
-        img1.drawText(str(acy2), 40, 75, color=(255,255,255), fontsize=20)
-        img1.drawText(str(acx3), 70, 50, color=(255,255,255), fontsize=20)
-        img1.drawText(str(acy3), 70, 75, color=(255,255,255), fontsize=20)
-        img1.drawText(str(acx4), 100, 50, color=(255,255,255), fontsize=20)
-        img1.drawText(str(acy4), 100, 75, color=(255,255,255), fontsize=20)
-        img1.save(js.framebuffer)
-        d = 'u'
-        ms = 50
-        s.write('6')
-        mov = acx(s, d, ms, acu, acd, acl, acr)
-        mov.run()
-        time.sleep(1)
-        
-        img1 = c.getImage()   
-        blobs = img1.findBlobs()
-        img1.drawCircle((blobs[-1].x,blobs[-1].y),30,color=(255,255,255))
-        img1.drawCircle((blobs[-1].centroid()),10,color=(255,100,100))
-        acx5 = blobs[-1].x
-        acy5 = blobs[-1].y
-        img1.drawText("ogp: autocalibrating", 10, 10, fontsize=50)
-        img1.drawText(str(acx1), 10, 50, color=(255,255,255), fontsize=20)
-        img1.drawText(str(acy1), 10, 75, color=(255,255,255), fontsize=20)        
-        img1.drawText(str(acx2), 40, 50, color=(255,255,255), fontsize=20)
-        img1.drawText(str(acy2), 40, 75, color=(255,255,255), fontsize=20)
-        img1.drawText(str(acx3), 70, 50, color=(255,255,255), fontsize=20)
-        img1.drawText(str(acy3), 70, 75, color=(255,255,255), fontsize=20)
-        img1.drawText(str(acx4), 100, 50, color=(255,255,255), fontsize=20)
-        img1.drawText(str(acy4), 100, 75, color=(255,255,255), fontsize=20)
-        img1.drawText(str(acx5), 130, 50, color=(255,255,255), fontsize=20)
-        img1.drawText(str(acy5), 130, 75, color=(255,255,255), fontsize=20)
-        img1.save(js.framebuffer)
-        cal1 = acx1 - acx2
-        cal2 = acy2 - acy3
-        cal3 = acx3 - acx4
-        cal4 = acy4 = acy5
-        time.sleep(2)
-        wsh.write_message(wsh2, "x_" + str(cal1) + "_" + str(cal2) + "_" + str(cal3)+ "_" + str(cal4) )
-
-
-class hud2(object):
-    def __init__(self, img1, js, stat, x, y, z):
-        self.img1 = img1
-        self.js = js
-        self.stat = stat
-        self.x = x
-        self.y = y
-        self.z = z
-        
-    
-    def run(self):        
-        img1 = self.img1
-        js = self.js
-        stat = self.stat
-        x = self.x
-        y = self.y
-        z = self.z
-        cent = 0
-        rgb1 = 0
-        
-
-        
-        blobs = img1.findBlobs()
-        if blobs:
-            crop1 = blobs[-1].x
-            crop2 = blobs[-1].y
-            crop3 = crop1 - 294
-            crop4 = crop2 - 144
-            img1 = img1.crop(crop3,crop4,544,288)
-            img1.drawCircle((blobs[-1].x,blobs[-1].y),30,color=(255,255,255))
-            img1.drawCircle((blobs[-1].centroid()),10,color=(255,100,100))
-            rgb1 = blobs[-1].meanColor()
-            cent = blobs[-1].centroid()
-            
-
-        img1.drawText(str(stat), 10, 10, fontsize=50)
-        img1.drawText(str(x), 10, 70, color=(255,255,255), fontsize=25)
-        img1.drawText(str(y), 10, 100, color=(255,255,255), fontsize=25)
-        
-        img1.drawText(str(z), 10, 230, color=(255,255,255), fontsize=15)
-        img1.drawText(str(cent), 10, 250, color=(255,255,255), fontsize=15)
-        img1.drawText(str(rgb1), 10, 270, color=(255,255,255), fontsize=15)
-        img1.save(js.framebuffer)
-
-class acx(object):
-    def __init__(self, s, d, ms, acu, acd, acl, acr):
-
-        self.s = s
-        self.d = d
-        self.ms = ms
-        self.acu = acu
-        self.acd = acd
-        self.acl = acl
-        self.acr = acr   
-    
-    def run(self):
-        s = self.s
-        d = self.d
-        ms = self.ms
-        acu = self.acu
-        acd = self.acd
-        acl = self.acl
-        acr = self.acr
-        stat = "ogp"
-        x = 'x'
-        y = 'y'
-        z = 'z'
-
-        acu1 = ms * acu
-        acd1 = ms * acd
-        acl1 = ms * 1.25
-        acr1 = ms * acr
-        i = int(0)
-
-        if d =='u':
-            self.countdown = acu1
-        if d =='d':
-            self.countdown = acd1
-        if d =='l':
-            self.countdown = acl1
-        if d =='r':
-            self.countdown = acr1
-
-        acms = self.countdown
-        
-        while i < acms:
-            i = i + 1
-            time.sleep(.001)
-
-        if d == 'u':
-            s.write('8')
-        if d == 'd':
-            s.write('8')
-            
-        if d == 'l':
-            s.write('3')
-        if d == 'r':
-            s.write('3')
-
-
-
-
-if __name__ == '__main__'  :
-    foo = so(2)
-    foo.histo()
-    foo.run()
-else:
-   pass
-

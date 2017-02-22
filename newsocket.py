@@ -170,36 +170,36 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
                 cent = blobs[-1].centroid()  ## puts centroid data into a variable
 
                 img1.drawText(str(stat), 10, 10, fontsize=50)  ## writes status data onto image
-                img1.drawText(str(x), 10, 70, color=(255,255,255), fontsize=25) ##
+                img1.drawText(str(x), 10, 70, color=(255,255,255), fontsize=25) 
                 img1.drawText(str(y), 10, 100, color=(255,255,255), fontsize=25)
                 img1.drawRectangle(sqx,sqy,25, 25,color=(255,255,255))
 
-                img1.drawText(str(z), 10, 230, color=(255,255,255), fontsize=15)
+                img1.drawText(str(z), 10, 230, color=(255,255,255), fontsize=15)##more data onto image
                 img1.drawText(str(cent), 10, 250, color=(255,255,255), fontsize=15)
                 img1.drawText(str(rgb1), 10, 270, color=(255,255,255), fontsize=15)
-            img1.save(js.framebuffer)
-            self.write_message("echo: " + message + " " + str(cam_mode) )    
+            img1.save(js.framebuffer)##send image to client
+            self.write_message("echo: " + message + " " + str(cam_mode) )## some debug info sent to client    
 
-        if message =='c2':
-            cam_mode = 2
-            self.cam_mode = cam_mode
-            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy,s,wsh2,c)
-            irpic.run()
-            self.write_message("echo: " + message + " " + str(cam_mode) )    
+        if message =='c2':## this code switches the cam mode to mode 2 -large format- and sends the new image to the client 
+            cam_mode = 2   #switch mode
+            self.cam_mode = cam_mode  #save new mode 
+            irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy,s,wsh2,c)  ##get new image instance
+            irpic.run()## get and send new image 
+            self.write_message("echo: " + message + " " + str(cam_mode) )  ## debug info sends to client   
 
-        if message =='vid':
+        if message =='vid': ## records some video 
             message = 'blank'
-            framecount = 1
-            while(framecount < 300): #record @ 15fps
-                pth1="/var/www/html/images/image"
-		pth3=".png"
-	 	pth= pth1 + str(framecount) + pth3
-   		img1=Image(pth) 
-	        img1.save(vs)
+            framecount = 1    ##reset framecount
+            while(framecount < 300): #record 300 frames @ 15fps    
+                pth1="/var/www/html/images/image"   ## part one of image location   
+		pth3=".png"    ## pt 3 of image location
+	 	pth= pth1 + str(framecount) + pth3  ## concatonated image location
+   		img1=Image(pth) ## grab new image by name
+	        img1.save(vs)  ##save new image to vid stream 
                ## time.sleep(0.1)
                ## c.getImage().save(js.framebuffer)
                ## time.sleep(0.1)
-                framecount = framecount + 1
+                framecount = framecount + 1  ##progress iteration
 
         if message =='vid2':
             framecount = 0

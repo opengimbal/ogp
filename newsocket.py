@@ -187,7 +187,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
             irpic.run()## get and send new image 
             self.write_message("echo: " + message + " " + str(cam_mode) )  ## debug info sends to client   
 
-        if message =='vid': ## records some video 
+        if message =='vid': ## creates a video file from our image folder
             message = 'blank'
             framecount = 1    ##reset framecount
             while(framecount < 300): #record 300 frames @ 15fps    
@@ -201,7 +201,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
                ## time.sleep(0.1)
                 framecount = framecount + 1  ##progress iteration
 
-        if message =='vid2':
+        if message =='vid2':##playback folder contents as animation to client
             framecount = 0
             message = 'blank'
             while(framecount < 300): #record @ 15fps
@@ -216,7 +216,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
                 img1.save(js.framebuffer)
 		
 
-        if message =='vid3':
+        if message =='vid3':##collect video in realtime
             framecount = 2
             message = 'blank'
             while(framecount < 300): #playback @ 15fps
@@ -231,7 +231,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
 
 
 
-        if message =='c1':
+        if message =='c1': ## switch image mode to mode 1- picam lo res-
             cam_mode = 1
             self.cam_mode = cam_mode
             img1 = c.getImage()
@@ -240,7 +240,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
             irpic.run()
             self.write_message("echo: " + message + " " + str(cam_mode) )    
 
-        if message =='h':
+        if message =='h':##move scope left 1 
             print "h"
             x = x - 1
             self.x = x

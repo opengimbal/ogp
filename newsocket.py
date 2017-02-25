@@ -216,7 +216,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
                 img1.save(js.framebuffer)
 		
 
-        if message =='vid3':##collect video in realtime
+        if message =='vid3':   ##collect video in realtime
             framecount = 2
             message = 'blank'
             while(framecount < 300): #playback @ 15fps
@@ -231,7 +231,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
 
 
 
-        if message =='c1': ## switch image mode to mode 1- picam lo res-
+        if message =='c1':  ## switch image mode to mode 1- picam lo res-
             cam_mode = 1
             self.cam_mode = cam_mode
             img1 = c.getImage()
@@ -240,7 +240,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
             irpic.run()
             self.write_message("echo: " + message + " " + str(cam_mode) )    
 
-        if message =='h':##move scope left 1 
+        if message =='h':  ## move scope left 1 STEP and take a pic
             print "h"
             x = x - 1
             self.x = x
@@ -249,25 +249,28 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
             irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy,s,wsh2,c)
             irpic.run()
             
-        if message == 'squ':
+        if message == 'squ':   ## move the keyhole square up one click - chase function thinks the square IS the CENTER of frame 
             print "squ"
             sqy = self.sqy
             sqy = sqy + 25
             self.write_message("echo: "+str(sqy)+" sighting square")
             self.sqy=sqy
-        if message == 'sqd':
+	
+        if message == 'sqd':  ## move the keyhole square down one click - chase function thinks the square IS the CENTER of frame 
             print "sqd"
             sqy = self.sqy
             sqy = sqy - 25
             self.write_message("echo: "+str(sqy)+" sighting square")
             self.sqy=sqy
-        if message == 'sql':
+	
+        if message == 'sql':  ## move the keyhole square left one click - chase function thinks the square IS the CENTER of frame 
             print "sql"
             sqx = self.sqx
             sqx = sqx + 25
             self.write_message("echo: "+str(sqx)+" sighting square")
             self.sqx=sqx
-        if message == 'sqr':
+	
+        if message == 'sqr':   ## move the keyhole square right one click - chase function thinks the square IS the CENTER of frame 
             print "sqr"
             sqx = self.sqx
             sqx = sqx - 25
@@ -275,7 +278,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
             self.sqx=sqx
             
 
-        if message =='p':
+        if message =='p':  ## increases the size of the search map
             stat = "mapsizing"
             print "p"
             mapsize = mapsize + 1
@@ -289,7 +292,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
             self.map = map
             map.histo()                                   ##  histogram is necessary before run
   
-        if message =='l':
+        if message =='l': ## decreases the size of the search map
             stat = "mapsizing"
             print "l"
             mapsize = mapsize - 1
@@ -305,7 +308,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
             map.histo()                                   ##  histogram is necessary before run
   
             
-        if message =='y':
+        if message =='y':   ## NUDGE SCOPE UPWARD and GET A PIC 
             print "y"
             y = y + 1
             self.y = y
@@ -315,7 +318,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
             irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy,s,wsh2,c)
             irpic.run()
 
-        if message =='g':
+        if message =='g':  ## NUDGE SCOPE DOWNWARD and GET A PIC 
             print "g"
             y = y - 1
             self.y = y
@@ -325,7 +328,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
             irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy,s,wsh2,c)
             irpic.run()
 
-        if message =='z':
+        if message =='z':   ## STEP SCOPE DOWNWARD ONE STEP and GET A PIC   --STEP UP
             stat = "mapping down"
             print "z- map down"
             y = y - 1
@@ -336,7 +339,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
             irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy,s,wsh2,c)
             irpic.run()
 
-        if message =='a':
+        if message =='a':  ## STEP SCOPE COUTERCLOCKWISE ONE STEP and GET A PIC   -- STEP LEFT
             stat = "mapping left"
             print "a- map left"
             x = x-1
@@ -348,7 +351,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
             irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy,s,wsh2,c)
             irpic.run()
 
-        if message =='w':
+        if message =='w':    ## STEP SCOPE UPWARD ONE STEP and GET A PIC   --STEP UP
             stat = "mapping up"
             print "w- map up"
             y = y + 1
@@ -360,7 +363,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
             irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy,s,wsh2,c)
             irpic.run()
 
-        if message =='s':
+        if message =='s':  ## STEP SCOPE CLOCKWISE ONE STEP and GET A PIC   --STEP RIGHT
             stat = "mapping right"
             print "s- map right"
             x = x + 1
@@ -372,7 +375,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
             irpic = ircam.pinoir2(js, cam_mode, c2, x, y, z, stat,sqx,sqy,s,wsh2,c)
             irpic.run()
 
-        if message =='b':           ## MAPPER
+        if message =='b':           ## MAPPER - gets u one iteration of the map and search function (outward spiral)
             if mapping == True:
                 print "a"
 ##                s.write('n')
@@ -384,7 +387,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
                 map = self.map
                 map.run()                        
 
-        if message =='map':           ## MAPPER
+        if message =='map':           ## MAPPER - makes an instance of the map and search function (outward spiral)
             if mapping == False:
                 mapping = True
                 print "n"
@@ -405,14 +408,14 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
            
 
 
-        if message == 'c':
+        if message == 'c':    ## CREATES AN INSTANCE OF THE CHASE LOOP FUNCTION (Blob Centering)
             wsh = tornado.websocket.WebSocketHandler        ## wsh holds some socket info
             wsh2 = self  ## wsh2 holds the name of the instance
             cchase = chase4(js, wsh, wsh2, c2, sqx, sqy, cam_mode,c)
             cchase.run()
                     
 
-        if message == 'golive':
+        if message == 'golive':    ## LIVE CAMERA FUNCTION, INSTANCIATE THYSELF AND START THE LOOP WITH OUR CLIENT
             wsh = tornado.websocket.WebSocketHandler        ## wsh holds some socket info
             wsh2 = self    ## wsh2 holds the name of the instance
             if live == False:
@@ -426,7 +429,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
                 self.live = live
                 print live
 
-        if message == 'live':
+        if message == 'live':    ## LIVE CAMERA FUNCTION, ITERATE THY SELF ONCE AGAIN
             wsh = tornado.websocket.WebSocketHandler        ## wsh holds some socket info
             wsh2 = self    ## wsh2 holds the name of the instance
             if live == True:
@@ -435,10 +438,9 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
             print live
 
              
-
                 
 
-        if message == 'x':
+        if message == 'x':    ## send an image from the folder by image index iteration
             showimage = showimage - 1
             self.showimage = showimage
             pth1 = "/var/www/html/images/image"
@@ -451,7 +453,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
             img1.save(js.framebuffer)
 
             
-        if message == 'v':
+        if message == 'v':       ## run focus motor one click   OUT
             showimage = showimage + 1
             self.showimage = showimage
             pth1 = "/var/www/html/images/image"
@@ -464,13 +466,14 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
             img1.save(js.framebuffer)
 ##
 
-        if message =='t':
+        if message =='t':    ## run focus motor one click   IN
             print "t"
             s.write('t')
             time.sleep(1)
             s.write('c')
             self.write_message("echo: " + message + " focus out")            
-        if message =='f':
+	
+        if message =='f': ## run focus motor one click   IN
             print "f"
             s.write('f')
             time.sleep(1)
@@ -484,7 +487,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
             s.write('2')
             self.write_message("echo: " + message + " 2")
 
-        if message =='3':
+        if message =='3':   ## open drift open gear FULL STOP HORIZONTAL
             print "3"
             s.write('3')
             self.write_message("echo: " + message + "3")
@@ -492,18 +495,18 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
             irpic.run()
 
 
-        if message =='4':
+        if message =='4':   ## open drift open gear   CLOCKWISE OPEN
             print "4"
             s.write('4')
             self.write_message("echo: " + message + "4")
             
 
-        if message =='7':
+        if message =='7':   ## open drift open gear danger   DOWN OPEN
             print "7"
             s.write('6')
             self.write_message("echo: " + message + " 7")
 
-        if message =='mx':
+        if message =='mx':   ##ask arduino for the sensor output
             print "sensor"
             s.write('n')
             time.sleep(1)
@@ -519,7 +522,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
             img1.save(js.framebuffer)
             
 
-        if message =='8':
+        if message =='8':   ## open gear vertical motor FULL STOP VERTICAL
             print "8"
             s.write('8')
             self.write_message("echo: " + message + " 8")
@@ -527,7 +530,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):   ## object that creates to
             irpic.run()
 
 
-        if message =='9':
+        if message =='9':    ## open drift open gear danger   UP OPEN
             print "9"
             s.write('9')
             self.write_message("echo: " + message + " 9")

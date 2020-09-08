@@ -1,7 +1,6 @@
 OpenGimbal Project
 aka Starbucket
 
-https://online.valenciacollege.edu/eportfolios/2004/Home
 
 DIY WIRELESS TELESCOPY
 

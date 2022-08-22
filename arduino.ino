@@ -1,3 +1,4 @@
+// Moving All this to RPI side Python.  (H- BRIDGE and ACCELEROMETER MAGNETOMETER)
 // OGP -- ARDUINO SIDE V3.0
 
 // for use with any serial device over usb
